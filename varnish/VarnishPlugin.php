@@ -39,7 +39,8 @@ class VarnishPlugin extends BasePlugin
 		/**
 		 * Listen to the `elements.onBeforeSaveElement` event
 		 */
-		craft()->on('elements.onBeforeSaveElement', function(Event $event) {
+		craft()->on('elements.onBeforeSaveElement', function(Event $event)
+		{
 
 			$elementId = $event->params['element']->id;
 
@@ -48,21 +49,16 @@ class VarnishPlugin extends BasePlugin
 				craft()->varnish->purgeElementById($elementId);
 			}
 
-			// die();
-
-			// 1. Get all the urls that are affected by this element id from the template caches table
-			// 2. Make a task with those urls that goes over each one doing the guzzle
-
-			// Guzzle method
-			// $url = 'http://craft.craft.dev:8080/';
-			//
-			// $client = new \Guzzle\Http\Client();
-			//
-			// $request = $client->createRequest('PURGE', $url);
-			//
-
-
 		});
+
+		/**
+		 * Listen to the `elements.onSaveElement` event
+		 */
+		// TODO: possibly ping pending tasks here
+		// craft()->on('elements.onSaveElement', function(Event $event)
+		// {
+		//
+		// });
 
 	}
 

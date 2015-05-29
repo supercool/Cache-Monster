@@ -107,22 +107,3 @@ class VarnishPlugin extends BasePlugin
 
 
 }
-
-
-
-
-// TODO: batch and then wrap in this
-// try
-// {
-// 	$response = $request->send();
-//
-// 	return true;
-//
-// }
-// catch (\Exception $e)
-// {
-//
-// 	Craft::log('Varnish cache failed to purge. Message: ' . $e->getMessage(), LogLevel::Error);
-// 	return $e;
-//
-// }

@@ -43,11 +43,21 @@ class VarnishTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_paths = $this->getSettings()->paths;
+		// Get the actual paths out of the settings
+		$paths = $this->getSettings()->paths;
 
-		// TODO: Split the $paths array into chunks of 20 - each step
-		//       will be a batch of 20 requests
+		// Make our internal paths array
+		$this->_paths = array();
 
+		// Split the $paths array into chunks of 20 - each step
+		// will be a batch of 20 requests
+		$num = ceil( count($paths) / 20 );
+		for ($i=0; $i < $num; $i++)
+		{
+			$this->_paths[] = array_slice($paths, $i, 20);
+		}
+
+		// Count our final chunked array
 		return count($this->_paths);
 	}
 
@@ -61,17 +71,34 @@ class VarnishTask extends BaseTask
 	public function runStep($step)
 	{
 
-		// TODO: make a batch here
-
+		// TODO: sort out the url to be completely dynamic, siteUrl will be fine but right
+		//       now we're testing on a non standard port
 		$baseurl = 'http://craft.craft.dev:8080/';
 
-		foreach ($this->_paths as $path)
+		// TODO: make a batch here
+		foreach ($this->_paths[$step] as $path)
 		{
 			$client = new \Guzzle\Http\Client();
 			$url = $baseurl . preg_replace('/site:/', '', $path, 1);
 			$request = $client->createRequest('PURGE', $url);
 			$response = $request->send();
 		}
+
+		// TODO: once batched work out how to handle the exceptions and log them all
+		// try
+		// {
+		// 	$response = $request->send();
+		//
+		// 	return true;
+		//
+		// }
+		// catch (\Exception $e)
+		// {
+		//
+		// 	Craft::log('Varnish cache failed to purge. Message: ' . $e->getMessage(), LogLevel::Error);
+		// 	return $e;
+		//
+		// }
 
 		return true;
 

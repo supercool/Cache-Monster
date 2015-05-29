@@ -46,7 +46,50 @@ class VarnishPlugin extends BasePlugin
 
 			if ( $elementId )
 			{
-				craft()->varnish->purgeElementById($elementId);
+
+				// Get the paths we need
+				$paths = craft()->varnish->getPathsToPurge($elementId);
+
+				if ($paths)
+				{
+
+					// If there are any pending Varnish tasks, just append these path to it
+					$task = craft()->tasks->getNextPendingTask('Varnish');
+
+					if ($task && is_array($task->settings))
+					{
+						$settings = $task->settings;
+
+						if (!is_array($settings['paths']))
+						{
+							$settings['paths'] = array($settings['paths']);
+						}
+
+						if (is_array($paths))
+						{
+							$settings['paths'] = array_merge($settings['paths'], $paths);
+						}
+						else
+						{
+							$settings['paths'][] = $paths;
+						}
+
+						// Make sure there aren't any duplicate paths
+						$settings['paths'] = array_unique($settings['paths']);
+
+						// Set the new settings and save the task
+						$task->settings = $settings;
+						craft()->tasks->saveTask($task, false);
+					}
+					else
+					{
+						craft()->tasks->createTask('Varnish', null, array(
+							'paths' => $paths
+						));
+					}
+
+				}
+
 			}
 
 		});
@@ -64,3 +107,22 @@ class VarnishPlugin extends BasePlugin
 
 
 }
+
+
+
+
+// TODO: batch and then wrap in this
+// try
+// {
+// 	$response = $request->send();
+//
+// 	return true;
+//
+// }
+// catch (\Exception $e)
+// {
+//
+// 	Craft::log('Varnish cache failed to purge. Message: ' . $e->getMessage(), LogLevel::Error);
+// 	return $e;
+//
+// }

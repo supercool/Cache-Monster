@@ -51,7 +51,7 @@ class VarnishTask extends BaseTask
 
 		// Split the $paths array into chunks of 20 - each step
 		// will be a batch of 20 requests
-		$num = ceil( count($paths) / 20 );
+		$num = ceil(count($paths) / 20);
 		for ($i=0; $i < $num; $i++)
 		{
 			$this->_paths[] = array_slice($paths, $i, 20);
@@ -71,18 +71,36 @@ class VarnishTask extends BaseTask
 	public function runStep($step)
 	{
 
+		// NOTE: Perhaps much of this should be moved into a service
+
 		// TODO: sort out the url to be completely dynamic, siteUrl will be fine but right
 		//       now we're testing on a non standard port
 		$baseurl = 'http://craft.craft.dev:8080/';
 
-		// TODO: make a batch here
+		// BatchRequestTransfer acts as both the divisor and transfer strategy
+		$transferStrategy = new \Guzzle\Batch\BatchRequestTransfer(20);
+		$divisorStrategy = $transferStrategy;
+
+		$batch = new \Guzzle\Batch\Batch($transferStrategy, $divisorStrategy);
+
+		// Make the client
+		$client = new \Guzzle\Http\Client();
+
+		// Loop the paths in this step
 		foreach ($this->_paths[$step] as $path)
 		{
-			$client = new \Guzzle\Http\Client();
+
+			// Make the url, stripping 'site:' from the path
 			$url = $baseurl . preg_replace('/site:/', '', $path, 1);
 			$request = $client->createRequest('PURGE', $url);
-			$response = $request->send();
+
+			// Add this request to the batch queue
+			$batch->add($request);
+
 		}
+
+		// Flush the queue and retrieve the flushed items
+		$arrayOfTransferredRequests = $batch->flush();
 
 		// TODO: once batched work out how to handle the exceptions and log them all
 		// try

@@ -40,7 +40,32 @@ class VarnishPlugin extends BasePlugin
 		 * Listen to the `elements.onBeforeSaveElement` event
 		 */
 		craft()->on('elements.onBeforeSaveElement', function(Event $event) {
-			// TODO: make it work!
+
+			// 1. Get all the urls that are affected by this element id from the template caches table
+			// 2. Make a task with those urls that goes over each one doing the guzzle
+
+			// Guzzle method
+			$url = 'http://craft.craft.dev:8080/';
+
+			$client = new \Guzzle\Http\Client();
+
+			$request = $client->createRequest('PURGE', $url);
+
+			try
+			{
+				$response = $request->send();
+
+				return true;
+
+			}
+			catch (\Exception $e)
+			{
+
+				Craft::log('Varnish cache failed to purge. Message: ' . $e->getMessage(), LogLevel::Error);
+				return $e;
+
+			}
+
 		});
 
 	}

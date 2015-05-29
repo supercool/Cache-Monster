@@ -73,10 +73,6 @@ class VarnishTask extends BaseTask
 
 		// NOTE: Perhaps much of this should be moved into a service
 
-		// TODO: sort out the url to be completely dynamic, siteUrl will be fine but right
-		//       now we're testing on a non standard port
-		$baseurl = 'http://craft.craft.dev:8080/';
-
 		// BatchRequestTransfer acts as both the divisor and transfer strategy
 		$transferStrategy = new \Guzzle\Batch\BatchRequestTransfer(20);
 		$divisorStrategy = $transferStrategy;
@@ -91,7 +87,7 @@ class VarnishTask extends BaseTask
 		{
 
 			// Make the url, stripping 'site:' from the path
-			$url = $baseurl . preg_replace('/site:/', '', $path, 1);
+			$url = $siteUrl . preg_replace('/site:/', '', $path, 1);
 			$request = $client->createRequest('PURGE', $url);
 
 			// Add this request to the batch queue
@@ -102,21 +98,8 @@ class VarnishTask extends BaseTask
 		// Flush the queue and retrieve the flushed items
 		$arrayOfTransferredRequests = $batch->flush();
 
-		// TODO: once batched work out how to handle the exceptions and log them all
-		// try
-		// {
-		// 	$response = $request->send();
-		//
-		// 	return true;
-		//
-		// }
-		// catch (\Exception $e)
-		// {
-		//
-		// 	Craft::log('Varnish cache failed to purge. Message: ' . $e->getMessage(), LogLevel::Error);
-		// 	return $e;
-		//
-		// }
+		// TODO: probably should handle the exceptions and log them or something
+		//       see here: http://guzzle3.readthedocs.org/batching/batching.html#exception-buffering
 
 		return true;
 

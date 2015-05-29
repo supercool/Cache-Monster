@@ -33,4 +33,17 @@ class VarnishPlugin extends BasePlugin
 		return 'http://plugins.supercooldesign.co.uk';
 	}
 
+	public function init()
+	{
+
+		/**
+		 * Listen to the `elements.onBeforeSaveElement` event
+		 */
+		craft()->on('elements.onBeforeSaveElement', function(Event $event) {
+			// TODO: make it work!
+		});
+
+	}
+
+
 }

@@ -80,43 +80,48 @@ class VarnishPlugin extends BasePlugin
 
 			$paths = craft()->cache->get('varnishPaths');
 
+			$batch = \Guzzle\Batch\BatchBuilder::factory()
+						->transferRequests(20)
+						->build();
+
+			// Make the client
+			$client = new \Guzzle\Http\Client();
+
+			// Set the Accept header
+			$client->setDefaultOption('headers/Accept', '*/*');
+
 			if ($paths)
 			{
 
-				// If there are any pending Varnish tasks, just append these path to it
-				$task = craft()->tasks->getNextPendingTask('Varnish');
-
-				if ($task && is_array($task->settings))
+				foreach ($paths as $path)
 				{
-					$settings = $task->settings;
 
-					if (!is_array($settings['paths']))
-					{
-						$settings['paths'] = array($settings['paths']);
-					}
+					// Make the url, stripping 'site:' from the path
+					$newPath = preg_replace('/site:/', '', $path, 1);
+					$url = UrlHelper::getSiteUrl($newPath);
 
-					if (is_array($paths))
-					{
-						$settings['paths'] = array_merge($settings['paths'], $paths);
-					}
-					else
-					{
-						$settings['paths'][] = $paths;
-					}
+					Craft::log('Adding URL: '.$url, LogLevel::Error, true);
 
-					// Make sure there aren't any duplicate paths
-					$settings['paths'] = array_unique($settings['paths']);
+					// Create the GET request
+					$request = $client->get($url);
 
-					// Set the new settings and save the task
-					$task->settings = $settings;
-					craft()->tasks->saveTask($task, false);
+					// Add it to the batch
+					$batch->add($request);
+
 				}
-				else
-				{
-					craft()->tasks->createTask('Varnish', null, array(
-						'paths' => $paths
-					));
-				}
+
+				// Flush the queue and retrieve the flushed items
+				$requests = $batch->flush();
+
+				echo "<pre>";
+				print_r($requests);
+				echo "</pre>";
+
+				die();
+
+
+				// $this->_makeTask('Varnish_Purge', $paths);
+				// $this->_makeTask('Varnish_Warm', $paths);
 
 			}
 
@@ -124,5 +129,52 @@ class VarnishPlugin extends BasePlugin
 
 	}
 
+
+	/**
+	 * [_makeTask description]
+	 * @method _makeTask
+	 * @param  [type]    $taskName [description]
+	 * @param  [type]    $paths    [description]
+	 * @return [type]              [description]
+	 */
+	private function _makeTask($taskName, $paths)
+	{
+
+		// If there are any pending tasks, just append the paths to it
+		$task = craft()->tasks->getNextPendingTask($taskName);
+
+		if ($task && is_array($task->settings))
+		{
+			$settings = $task->settings;
+
+			if (!is_array($settings['paths']))
+			{
+				$settings['paths'] = array($settings['paths']);
+			}
+
+			if (is_array($paths))
+			{
+				$settings['paths'] = array_merge($settings['paths'], $paths);
+			}
+			else
+			{
+				$settings['paths'][] = $paths;
+			}
+
+			// Make sure there aren't any duplicate paths
+			$settings['paths'] = array_unique($settings['paths']);
+
+			// Set the new settings and save the task
+			$task->settings = $settings;
+			craft()->tasks->saveTask($task, false);
+		}
+		else
+		{
+			craft()->tasks->createTask($taskName, null, array(
+				'paths' => $paths
+			));
+		}
+
+	}
 
 }

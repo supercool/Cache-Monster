@@ -10,7 +10,7 @@ namespace Craft;
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class VarnishTask extends BaseTask
+class Varnish_WarmTask extends BaseTask
 {
 
 	// Properties
@@ -33,7 +33,7 @@ class VarnishTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Purging the Varnish cache');
+		return Craft::t('Warming the Varnish cache');
 	}
 
 	/**
@@ -91,19 +91,18 @@ class VarnishTask extends BaseTask
 			$newPath = preg_replace('/site:/', '', $path, 1);
 			$url = UrlHelper::getSiteUrl($newPath);
 
-			// Create the PURGE request
-			$request = $client->createRequest('PURGE', $url);
+			Craft::log('Adding URL: '.$url, LogLevel::Error, true);
 
-			// Add this request to the batch queue
+			// Create the PURGE request
+			$request = $client->get($url);
+
+			// Add it to the batch
 			$batch->add($request);
 
 		}
 
 		// Flush the queue and retrieve the flushed items
 		$requests = $batch->flush();
-
-		// TODO: probably should handle the exceptions and log them or something
-		//       see here: http://guzzle3.readthedocs.org/batching/batching.html#exception-buffering
 
 		return true;
 

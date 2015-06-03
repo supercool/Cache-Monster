@@ -113,6 +113,11 @@ class VarnishPlugin extends BasePlugin
 				// Flush the queue and retrieve the flushed items
 				$requests = $batch->flush();
 
+				// FIXME: currently lots of 404 pages cause it to error out,
+				//        in fact we shouldn’t warm error pages anyway!
+				//
+				//        AND to cap it all we should probably handle these exceptions properly
+
 				echo "<pre>";
 				print_r($requests);
 				echo "</pre>";

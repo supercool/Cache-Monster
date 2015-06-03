@@ -73,21 +73,25 @@ class VarnishTask extends BaseTask
 
 		// NOTE: Perhaps much of this should be moved into a service
 
-		// BatchRequestTransfer acts as both the divisor and transfer strategy
-		$transferStrategy = new \Guzzle\Batch\BatchRequestTransfer(20);
-		$divisorStrategy = $transferStrategy;
-
-		$batch = new \Guzzle\Batch\Batch($transferStrategy, $divisorStrategy);
+		$batch = \Guzzle\Batch\BatchBuilder::factory()
+						->transferRequests(20)
+						->build();
 
 		// Make the client
 		$client = new \Guzzle\Http\Client();
+
+		// Set the Accept header
+		$client->setDefaultOption('headers/Accept', '*/*');
 
 		// Loop the paths in this step
 		foreach ($this->_paths[$step] as $path)
 		{
 
 			// Make the url, stripping 'site:' from the path
-			$url = $siteUrl . preg_replace('/site:/', '', $path, 1);
+			$newPath = preg_replace('/site:/', '', $path, 1);
+			$url = UrlHelper::getSiteUrl($newPath);
+
+			// Create the PURGE request
 			$request = $client->createRequest('PURGE', $url);
 
 			// Add this request to the batch queue
@@ -96,7 +100,7 @@ class VarnishTask extends BaseTask
 		}
 
 		// Flush the queue and retrieve the flushed items
-		$arrayOfTransferredRequests = $batch->flush();
+		$requests = $batch->flush();
 
 		// TODO: probably should handle the exceptions and log them or something
 		//       see here: http://guzzle3.readthedocs.org/batching/batching.html#exception-buffering

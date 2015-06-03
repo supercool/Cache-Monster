@@ -45,6 +45,12 @@ class VarnishService extends BaseApplicationComponent
 			// Return an array of them
 			if ($paths)
 			{
+
+				if ( ! is_array($paths) )
+				{
+					$paths = array($paths);
+				}
+
 				return $paths;
 			}
 			else

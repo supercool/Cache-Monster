@@ -92,8 +92,6 @@ class Varnish_WarmTask extends BaseTask
 			$newPath = preg_replace('/site:/', '', $path, 1);
 			$url = UrlHelper::getSiteUrl($newPath);
 
-			Craft::log('Adding URL: '.$url, LogLevel::Error, true);
-
 			// Create the GET request
 			$request = $client->get($url);
 

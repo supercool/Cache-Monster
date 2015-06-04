@@ -75,6 +75,7 @@ class Varnish_WarmTask extends BaseTask
 
 		$batch = \Guzzle\Batch\BatchBuilder::factory()
 						->transferRequests(20)
+						->bufferExceptions()
 						->build();
 
 		// Make the client
@@ -93,7 +94,7 @@ class Varnish_WarmTask extends BaseTask
 
 			Craft::log('Adding URL: '.$url, LogLevel::Error, true);
 
-			// Create the PURGE request
+			// Create the GET request
 			$request = $client->get($url);
 
 			// Add it to the batch
@@ -103,6 +104,10 @@ class Varnish_WarmTask extends BaseTask
 
 		// Flush the queue and retrieve the flushed items
 		$requests = $batch->flush();
+
+		// Clear any exceptions, we could log these
+		// via $batch->getExceptions() if we wanted to
+		$batch->clearExceptions();
 
 		return true;
 

@@ -20,7 +20,7 @@ class VarnishPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.2';
+		return '0.3';
 	}
 
 	public function getDeveloper()
@@ -54,6 +54,7 @@ class VarnishPlugin extends BasePlugin
 				if ($paths)
 				{
 
+					// Check if there are any already stored in the cache
 					$existingPaths = craft()->cache->get('varnishPaths');
 					craft()->cache->delete('varnishPaths');
 
@@ -63,6 +64,8 @@ class VarnishPlugin extends BasePlugin
 						$paths = array_unique($paths);
 					}
 
+					// Store them in the cache so we can get them after
+					// the element has actually saved
 					craft()->cache->set('varnishPaths', $paths);
 
 				}
@@ -73,60 +76,19 @@ class VarnishPlugin extends BasePlugin
 
 
 		/**
-		 * After the element has saved run the actual purging task
+		 * After the element has saved run the purging and warming tasks
 		 */
 		craft()->on('elements.onSaveElement', function(Event $event)
 		{
 
+			// Get the paths out of the cache
 			$paths = craft()->cache->get('varnishPaths');
-
-			$batch = \Guzzle\Batch\BatchBuilder::factory()
-						->transferRequests(20)
-						->build();
-
-			// Make the client
-			$client = new \Guzzle\Http\Client();
-
-			// Set the Accept header
-			$client->setDefaultOption('headers/Accept', '*/*');
 
 			if ($paths)
 			{
 
-				foreach ($paths as $path)
-				{
-
-					// Make the url, stripping 'site:' from the path
-					$newPath = preg_replace('/site:/', '', $path, 1);
-					$url = UrlHelper::getSiteUrl($newPath);
-
-					Craft::log('Adding URL: '.$url, LogLevel::Error, true);
-
-					// Create the GET request
-					$request = $client->get($url);
-
-					// Add it to the batch
-					$batch->add($request);
-
-				}
-
-				// Flush the queue and retrieve the flushed items
-				$requests = $batch->flush();
-
-				// FIXME: currently lots of 404 pages cause it to error out,
-				//        in fact we shouldn’t warm error pages anyway!
-				//
-				//        AND to cap it all we should probably handle these exceptions properly
-
-				echo "<pre>";
-				print_r($requests);
-				echo "</pre>";
-
-				die();
-
-
-				// $this->_makeTask('Varnish_Purge', $paths);
-				// $this->_makeTask('Varnish_Warm', $paths);
+				$this->_makeTask('Varnish_Purge', $paths);
+				$this->_makeTask('Varnish_Warm', $paths);
 
 			}
 
@@ -136,11 +98,12 @@ class VarnishPlugin extends BasePlugin
 
 
 	/**
-	 * [_makeTask description]
+	 * Regusters a Task with Craft, taking into account if there
+	 * is already one pending
+	 *
 	 * @method _makeTask
-	 * @param  [type]    $taskName [description]
-	 * @param  [type]    $paths    [description]
-	 * @return [type]              [description]
+	 * @param  string    $taskName   the name of the Task you want to register
+	 * @param  array     $paths      an array of paths that should go in that Tasks settings
 	 */
 	private function _makeTask($taskName, $paths)
 	{

@@ -75,6 +75,7 @@ class Varnish_PurgeTask extends BaseTask
 
 		$batch = \Guzzle\Batch\BatchBuilder::factory()
 						->transferRequests(20)
+						->bufferExceptions()
 						->build();
 
 		// Make the client
@@ -101,6 +102,10 @@ class Varnish_PurgeTask extends BaseTask
 
 		// Flush the queue and retrieve the flushed items
 		$requests = $batch->flush();
+
+		// Clear any exceptions, we could log these
+		// via $batch->getExceptions() if we wanted to
+		$batch->clearExceptions();
 
 		return true;
 

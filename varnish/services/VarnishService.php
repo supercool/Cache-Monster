@@ -66,4 +66,24 @@ class VarnishService extends BaseApplicationComponent
 
 	}
 
+
+	/**
+	 * TODO: let user set sitemap location(s) in the cp, default to /sitemap.xml
+	 * @method crawlSitemapForPaths
+	 * @return [type]               [description]
+	 */
+	public function crawlSitemapForPaths()
+	{
+
+		// Get the (given) sitemap
+		//
+		// Loop over its urls, adding each to an array whilst cleaning the domain off it
+		//
+		// dump the lot into the cache (merge with any already there, so will need to add 'site:' prefix so they are identical)
+		//
+		// return boolean or optionally the actual paths
+
+	}
+
+
 }

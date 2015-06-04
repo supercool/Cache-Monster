@@ -88,7 +88,7 @@ class Varnish_PurgeTask extends BaseTask
 		foreach ($this->_paths[$step] as $path)
 		{
 
-			// Make the url, stripping 'site:' from the path
+			// Make the url, stripping 'site:' from the path if it exists
 			$newPath = preg_replace('/site:/', '', $path, 1);
 			$url = UrlHelper::getSiteUrl($newPath);
 

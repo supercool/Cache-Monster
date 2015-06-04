@@ -51,11 +51,7 @@ class Varnish_PurgeTask extends BaseTask
 
 		// Split the $paths array into chunks of 20 - each step
 		// will be a batch of 20 requests
-		$num = ceil(count($paths) / 20);
-		for ($i=0; $i < $num; $i++)
-		{
-			$this->_paths[] = array_slice($paths, $i, 20);
-		}
+		$this->_paths = array_chunk($paths, 20);
 
 		// Count our final chunked array
 		return count($this->_paths);

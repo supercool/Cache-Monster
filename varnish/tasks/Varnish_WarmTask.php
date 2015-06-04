@@ -51,11 +51,7 @@ class Varnish_WarmTask extends BaseTask
 
 		// Split the $paths array into chunks of 20 - each step
 		// will be a batch of 20 requests
-		$num = ceil(count($paths) / 20);
-		for ($i=0; $i < $num; $i++)
-		{
-			$this->_paths[] = array_slice($paths, $i, 20);
-		}
+		$this->_paths = array_chunk($paths, 20);
 
 		// Count our final chunked array
 		return count($this->_paths);
@@ -105,6 +101,13 @@ class Varnish_WarmTask extends BaseTask
 
 		// Clear any exceptions, we could log these
 		// via $batch->getExceptions() if we wanted to
+
+		foreach ($batch->getExceptions() as $e)
+		{
+			Craft::log('VARNISH: an exception occurred: '.$e->getMessage(), LogLevel::Error);
+			Craft::log('VARNISH: the requests were: '.$e->getFailedRequests(), LogLevel::Info);
+		}
+
 		$batch->clearExceptions();
 
 		return true;

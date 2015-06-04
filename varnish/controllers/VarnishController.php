@@ -26,13 +26,7 @@ class VarnishController extends BaseController
 		// Crawl
 		$paths = craft()->varnish->crawlSitemapForPaths();
 
-		if (!$paths)
-		{
-			$paths = craft()->cache->get('varnishPaths');
-		}
-
-		// Check we have something either from crawling or stale
-		// and make our Task
+		// Check we have something
 		if ($paths)
 		{
 			craft()->varnish->makeTask('Varnish_Warm', $paths);

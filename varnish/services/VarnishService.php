@@ -78,6 +78,9 @@ class VarnishService extends BaseApplicationComponent
 	public function crawlSitemapForPaths()
 	{
 
+		// This might be heavy, probably not but better safe than sorry
+		craft()->config->maxPowerCaptain();
+
 		// Get any existing paths
 		if ( ! $paths = craft()->cache->get('varnishPaths') )
 		{
@@ -85,7 +88,7 @@ class VarnishService extends BaseApplicationComponent
 			$paths = array();
 		}
 
-		// Get the (given) sitemap
+		// Get the (one day specified) sitemap
 		$client = new \Guzzle\Http\Client();
 		$response = $client->get(UrlHelper::getSiteUrl('sitemap.xml'))->send();
 

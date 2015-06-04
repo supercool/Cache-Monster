@@ -20,7 +20,7 @@ class VarnishPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.4';
+		return '0.5';
 	}
 
 	public function getDeveloper()

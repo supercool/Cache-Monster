@@ -13,12 +13,14 @@ namespace Craft;
 class VarnishController extends BaseController
 {
 
-	protected $allowAnonymous = array('actionCrawlPurgeAndWarm');
+	protected $allowAnonymous = array('actionCrawlAndWarm');
 
 	/**
-	 * Update our url cache and force run the purging and warming Tasks
+	 * Update our url cache and force run the warming Task
+	 *
+	 * This should really be used with a fully purged Varnish
 	 */
-	public function actionCrawlPurgeAndWarm()
+	public function actionCrawlAndWarm()
 	{
 
 		// Crawl
@@ -30,10 +32,9 @@ class VarnishController extends BaseController
 		}
 
 		// Check we have something either from crawling or stale
-		// and make our Tasks
+		// and make our Task
 		if ($paths)
 		{
-			craft()->varnish->makeTask('Varnish_Purge', $paths);
 			craft()->varnish->makeTask('Varnish_Warm', $paths);
 		}
 

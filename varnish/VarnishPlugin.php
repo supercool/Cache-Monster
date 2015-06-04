@@ -20,7 +20,7 @@ class VarnishPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.7';
+		return '0.8';
 	}
 
 	public function getDeveloper()
@@ -43,10 +43,15 @@ class VarnishPlugin extends BasePlugin
 		craft()->on('elements.onBeforeSaveElement', function(Event $event)
 		{
 
+			// Get the element ID
 			$elementId = $event->params['element']->id;
 
+			// If we have an element, go ahead and get its paths
 			if ( $elementId )
 			{
+
+				// Clear our varnishPaths cache, just in case
+				craft()->cache->delete('varnishPaths-'.$elementId);
 
 				// Get the paths we need
 				$paths = craft()->varnish->getPathsToPurge($elementId);
@@ -54,19 +59,9 @@ class VarnishPlugin extends BasePlugin
 				if ($paths)
 				{
 
-					// Check if there are any already stored in the cache
-					$existingPaths = craft()->cache->get('varnishPaths');
-					craft()->cache->delete('varnishPaths');
-
-					if ( $existingPaths )
-					{
-						$paths = array_merge($existingPaths, $paths);
-						$paths = array_unique($paths);
-					}
-
 					// Store them in the cache so we can get them after
 					// the element has actually saved
-					craft()->cache->set('varnishPaths', $paths);
+					craft()->cache->set('varnishPaths-'.$elementId, $paths);
 
 				}
 
@@ -81,14 +76,26 @@ class VarnishPlugin extends BasePlugin
 		craft()->on('elements.onSaveElement', function(Event $event)
 		{
 
-			// Get the paths out of the cache
-			$paths = craft()->cache->get('varnishPaths');
+			// Get the element ID
+			$elementId = $event->params['element']->id;
 
-			if ($paths)
+			if ($elementId)
 			{
 
-				craft()->varnish->makeTask('Varnish_Purge', $paths);
-				craft()->varnish->makeTask('Varnish_Warm', $paths);
+				// Get the paths out of the cache for that element
+				$paths = craft()->cache->get('varnishPaths-'.$elementId);
+
+				// Remove this swiftly, as it might cause issues if its used again
+				craft()->cache->delete('varnishPaths-'.$elementId);
+
+				// Use those paths to purge and warm
+				if ($paths)
+				{
+
+					craft()->varnish->makeTask('Varnish_Purge', $paths);
+					craft()->varnish->makeTask('Varnish_Warm', $paths);
+
+				}
 
 			}
 

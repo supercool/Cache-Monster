@@ -81,12 +81,7 @@ class VarnishService extends BaseApplicationComponent
 		// This might be heavy, probably not but better safe than sorry
 		craft()->config->maxPowerCaptain();
 
-		// Get any existing paths
-		if ( ! $paths = craft()->cache->get('varnishPaths') )
-		{
-			craft()->cache->delete('varnishPaths');
-			$paths = array();
-		}
+		$paths = array();
 
 		// Get the (one day specified) sitemap
 		$client = new \Guzzle\Http\Client();
@@ -106,9 +101,6 @@ class VarnishService extends BaseApplicationComponent
 
 		// Check $paths is unique
 		$paths = array_unique($paths);
-
-		// Stick it in the cache
-		craft()->cache->set('varnishPaths', $paths);
 
 		// Return the actual paths
 		return $paths;

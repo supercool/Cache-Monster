@@ -68,22 +68,48 @@ class VarnishService extends BaseApplicationComponent
 
 
 	/**
-	 * TODO: let user set sitemap location(s) in the cp, default to /sitemap.xml
+	 * Gets the sitemap then caches and returns an array of the paths found in it
+	 *
+	 *  TODO: let user set sitemap location(s) in the cp, default to /sitemap.xml
+	 *
 	 * @method crawlSitemapForPaths
-	 * @return [type]               [description]
+	 * @return array               an array of $paths
 	 */
 	public function crawlSitemapForPaths()
 	{
 
+		// Get any existing paths
+		if ( ! $paths = craft()->cache->get('varnishPaths') )
+		{
+			craft()->cache->delete('varnishPaths');
+			$paths = array();
+		}
+
 		// Get the (given) sitemap
-		//
-		// Loop over its urls, adding each to an array whilst cleaning the domain off it
-		//
-		// dump the lot into the cache (merge with any already there, so will need to add 'site:' prefix so they are identical)
-		//
-		// return boolean or optionally the actual paths
+		$client = new \Guzzle\Http\Client();
+		$response = $client->get(UrlHelper::getSiteUrl('sitemap.xml'))->send();
+
+		// Get the xml and add each url to the $paths array
+		if ( $response->isSuccessful() )
+		{
+			$xml = $response->xml();
+
+			foreach ($xml->url as $url)
+			{
+				$parts = parse_url((string)$url->loc);
+				$paths[] = 'site:' . ltrim($parts['path'], '/');
+			}
+		}
+
+		// Check $paths is unique
+		$paths = array_unique($paths);
+
+		// Stick it in the cache
+		craft()->cache->set('varnishPaths', $paths);
+
+		// Return the actual paths
+		return $paths;
 
 	}
-
 
 }

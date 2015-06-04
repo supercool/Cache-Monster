@@ -99,15 +99,13 @@ class Varnish_WarmTask extends BaseTask
 		// Flush the queue and retrieve the flushed items
 		$requests = $batch->flush();
 
-		// Clear any exceptions, we could log these
-		// via $batch->getExceptions() if we wanted to
-
+		// Log any exceptions
 		foreach ($batch->getExceptions() as $e)
 		{
 			Craft::log('VARNISH: an exception occurred: '.$e->getMessage(), LogLevel::Error);
-			Craft::log('VARNISH: the requests were: '.$e->getFailedRequests(), LogLevel::Info);
 		}
 
+		// Clear any exceptions
 		$batch->clearExceptions();
 
 		return true;

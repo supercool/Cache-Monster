@@ -23,10 +23,13 @@ class VarnishController extends BaseController
 	public function actionCrawlAndWarm()
 	{
 
-		// Crawl
+		// Delete all the template caches!
+		craft()->templateCache->deleteAllCaches();
+
+		// Crawl the sitemap
 		$paths = craft()->varnish->crawlSitemapForPaths();
 
-		// Check we have something
+		// Check we have something and make warmer if we do
 		if ($paths)
 		{
 			craft()->varnish->makeTask('Varnish_Warm', $paths);

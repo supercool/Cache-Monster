@@ -112,4 +112,53 @@ class VarnishService extends BaseApplicationComponent
 
 	}
 
+
+	/**
+	 * Regusters a Task with Craft, taking into account if there
+	 * is already one pending
+	 *
+	 * @method makeTask
+	 * @param  string    $taskName   the name of the Task you want to register
+	 * @param  array     $paths      an array of paths that should go in that Tasks settings
+	 */
+	public function makeTask($taskName, $paths)
+	{
+
+		// If there are any pending tasks, just append the paths to it
+		$task = craft()->tasks->getNextPendingTask($taskName);
+
+		if ($task && is_array($task->settings))
+		{
+			$settings = $task->settings;
+
+			if (!is_array($settings['paths']))
+			{
+				$settings['paths'] = array($settings['paths']);
+			}
+
+			if (is_array($paths))
+			{
+				$settings['paths'] = array_merge($settings['paths'], $paths);
+			}
+			else
+			{
+				$settings['paths'][] = $paths;
+			}
+
+			// Make sure there aren't any duplicate paths
+			$settings['paths'] = array_unique($settings['paths']);
+
+			// Set the new settings and save the task
+			$task->settings = $settings;
+			craft()->tasks->saveTask($task, false);
+		}
+		else
+		{
+			craft()->tasks->createTask($taskName, null, array(
+				'paths' => $paths
+			));
+		}
+
+	}
+
 }

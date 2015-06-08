@@ -2,15 +2,15 @@
 namespace Craft;
 
 /**
- * Varnish by Supercool
+ * CacheMonster by Supercool
  *
- * @package   Varnish
+ * @package   CacheMonster
  * @author    Josh Angell
  * @copyright Copyright (c) 2015, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class VarnishService extends BaseApplicationComponent
+class CacheMonsterService extends BaseApplicationComponent
 {
 
 	/**

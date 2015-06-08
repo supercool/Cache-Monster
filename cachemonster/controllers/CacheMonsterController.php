@@ -2,15 +2,15 @@
 namespace Craft;
 
 /**
- * Varnish by Supercool
+ * CacheMonster by Supercool
  *
- * @package   Varnish
+ * @package   CacheMonster
  * @author    Josh Angell
  * @copyright Copyright (c) 2015, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class VarnishController extends BaseController
+class CacheMonsterController extends BaseController
 {
 
 	protected $allowAnonymous = array('actionCrawlAndWarm');
@@ -27,12 +27,12 @@ class VarnishController extends BaseController
 		craft()->templateCache->deleteAllCaches();
 
 		// Crawl the sitemap
-		$paths = craft()->varnish->crawlSitemapForPaths();
+		$paths = craft()->cacheMonster->crawlSitemapForPaths();
 
 		// Check we have something and make warmer if we do
 		if ($paths)
 		{
-			craft()->varnish->makeTask('Varnish_Warm', $paths);
+			craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 		}
 
 		// Run any pending tasks

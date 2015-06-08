@@ -1,3 +1,3 @@
-# Varnish
+# CacheMonster
 
-A Craft CMS plugin to purge your Varnish cache. Requires the native `{% cache %}` tag to work.
+A Craft CMS plugin that keeps your cache permanently warm and optionally integrates with [Varnish](https://www.varnish-cache.org/).

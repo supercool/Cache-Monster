@@ -2,20 +2,20 @@
 namespace Craft;
 
 /**
- * Varnish by Supercool
+ * CacheMonster by Supercool
  *
- * @package   Varnish
+ * @package   CacheMonster
  * @author    Josh Angell
  * @copyright Copyright (c) 2015, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class VarnishPlugin extends BasePlugin
+class CacheMonsterPlugin extends BasePlugin
 {
 
 	public function getName()
 	{
-		return Craft::t('Varnish');
+		return Craft::t('CacheMonster');
 	}
 
 	public function getVersion()
@@ -50,18 +50,18 @@ class VarnishPlugin extends BasePlugin
 			if ( $elementId )
 			{
 
-				// Clear our varnishPaths cache, just in case
-				craft()->cache->delete('varnishPaths-'.$elementId);
+				// Clear our cacheMonsterPaths cache, just in case
+				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
 
 				// Get the paths we need
-				$paths = craft()->varnish->getPathsToPurge($elementId);
+				$paths = craft()->cacheMonster->getPathsToPurge($elementId);
 
 				if ($paths)
 				{
 
 					// Store them in the cache so we can get them after
 					// the element has actually saved
-					craft()->cache->set('varnishPaths-'.$elementId, $paths);
+					craft()->cache->set('cacheMonsterPaths-'.$elementId, $paths);
 
 				}
 
@@ -83,17 +83,17 @@ class VarnishPlugin extends BasePlugin
 			{
 
 				// Get the paths out of the cache for that element
-				$paths = craft()->cache->get('varnishPaths-'.$elementId);
+				$paths = craft()->cache->get('cacheMonsterPaths-'.$elementId);
 
 				// Remove this swiftly, as it might cause issues if its used again
-				craft()->cache->delete('varnishPaths-'.$elementId);
+				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
 
 				// Use those paths to purge and warm
 				if ($paths)
 				{
 
-					craft()->varnish->makeTask('Varnish_Purge', $paths);
-					craft()->varnish->makeTask('Varnish_Warm', $paths);
+					craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
+					craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 
 				}
 

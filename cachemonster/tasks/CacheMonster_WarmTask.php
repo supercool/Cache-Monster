@@ -2,15 +2,15 @@
 namespace Craft;
 
 /**
- * Varnish by Supercool
+ * CacheMonster by Supercool
  *
- * @package   Varnish
+ * @package   CacheMonster
  * @author    Josh Angell
  * @copyright Copyright (c) 2015, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class Varnish_PurgeTask extends BaseTask
+class CacheMonster_WarmTask extends BaseTask
 {
 
 	// Properties
@@ -33,7 +33,7 @@ class Varnish_PurgeTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Purging the Varnish cache');
+		return Craft::t('Warming all the caches');
 	}
 
 	/**
@@ -88,8 +88,8 @@ class Varnish_PurgeTask extends BaseTask
 			$newPath = preg_replace('/site:/', '', $path, 1);
 			$url = UrlHelper::getSiteUrl($newPath);
 
-			// Create the PURGE request
-			$request = $client->createRequest('PURGE', $url);
+			// Create the GET request
+			$request = $client->get($url);
 
 			// Add it to the batch
 			$batch->add($request);
@@ -102,7 +102,7 @@ class Varnish_PurgeTask extends BaseTask
 		// Log any exceptions
 		foreach ($batch->getExceptions() as $e)
 		{
-			Craft::log('VARNISH: an exception occurred: '.$e->getMessage(), LogLevel::Error);
+			Craft::log('CacheMonster: an exception occurred: '.$e->getMessage(), LogLevel::Error);
 		}
 
 		// Clear any exceptions

@@ -137,7 +137,7 @@ class CacheMonsterPlugin extends BasePlugin
 	protected function defineSettings()
 	{
 		return array(
-			'varnish' => array(AttributeType::Bool, 'default' => true)
+			'varnish' => array(AttributeType::Bool, 'default' => false)
 		);
 	}
 

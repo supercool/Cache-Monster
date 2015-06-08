@@ -1,0 +1,11 @@
+{% import "_includes/forms" as forms %}
+
+<div class="item" data-colspan="1">
+	{{ forms.lightswitchField({
+		label: 'Enable Varnish?'|t,
+		id: 'varnish',
+		name: 'varnish',
+		on: settings.varnish,
+		errors: settings.getErrors('varnish')
+	}) }}
+</div>

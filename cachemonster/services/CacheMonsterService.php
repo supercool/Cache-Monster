@@ -16,11 +16,11 @@ class CacheMonsterService extends BaseApplicationComponent
 	/**
 	 * [purgeElementById description]
 	 *
-	 * @method getPathsToPurge
+	 * @method getPaths
 	 * @param  int           $elementId the elementId of the element we want purging
 	 * @return array                    an array of paths to purge
 	 */
-	public function getPathsToPurge($elementId)
+	public function getPaths($elementId)
 	{
 
 		// Get the cache ids that relate to this element

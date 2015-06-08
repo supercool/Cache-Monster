@@ -13,6 +13,17 @@ namespace Craft;
 class CacheMonsterPlugin extends BasePlugin
 {
 
+	// Properties
+	// =========================================================================
+
+	/**
+	 * @var
+	 */
+	private $_settings;
+
+	// Public Methods
+	// =========================================================================
+
 	public function getName()
 	{
 		return Craft::t('CacheMonster');
@@ -20,7 +31,7 @@ class CacheMonsterPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.8';
+		return '0.9';
 	}
 
 	public function getDeveloper()
@@ -35,6 +46,12 @@ class CacheMonsterPlugin extends BasePlugin
 
 	public function init()
 	{
+
+		/**
+		 * Get plugin settings
+		 */
+		$plugin = craft()->plugins->getPlugin('cachemonster');
+		$this->_settings = $plugin->getSettings();
 
 		/**
 		 * Before we save, grab the paths that are going to be purged
@@ -54,7 +71,7 @@ class CacheMonsterPlugin extends BasePlugin
 				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
 
 				// Get the paths we need
-				$paths = craft()->cacheMonster->getPathsToPurge($elementId);
+				$paths = craft()->cacheMonster->getPaths($elementId);
 
 				if ($paths)
 				{
@@ -85,14 +102,18 @@ class CacheMonsterPlugin extends BasePlugin
 				// Get the paths out of the cache for that element
 				$paths = craft()->cache->get('cacheMonsterPaths-'.$elementId);
 
-				// Remove this swiftly, as it might cause issues if its used again
+				// Remove this, as it might cause issues if its used again
 				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
 
-				// Use those paths to purge and warm
+				// Use those paths to purge (if on) and warm
 				if ($paths)
 				{
 
-					craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
+					if ($this->_settings['varnish'])
+					{
+						craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
+					}
+
 					craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 
 				}
@@ -101,6 +122,23 @@ class CacheMonsterPlugin extends BasePlugin
 
 		});
 
+	}
+
+	public function getSettingsHtml()
+	{
+		return craft()->templates->render('cacheMonster/settings', array(
+			'settings' => $this->getSettings()
+		));
+	}
+
+	// Protected Methods
+	// =========================================================================
+
+	protected function defineSettings()
+	{
+		return array(
+			'varnish' => array(AttributeType::Bool, 'default' => true)
+		);
 	}
 
 }

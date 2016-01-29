@@ -1,11 +1,17 @@
 {% import "_includes/forms" as forms %}
 
-<div class="item" data-colspan="1">
-	{{ forms.lightswitchField({
-		label: 'Enable Varnish purging?'|t,
-		id: 'varnish',
-		name: 'varnish',
-		on: settings.varnish,
-		errors: settings.getErrors('varnish')
-	}) }}
-</div>
+{{ forms.lightswitchField({
+	label: 'Enable cache warming?'|t,
+	id: 'warm',
+	name: 'warm',
+	on: settings.warm,
+	errors: settings.getErrors('warm')
+}) }}
+
+{{ forms.lightswitchField({
+	label: 'Enable Varnish purging?'|t,
+	id: 'varnish',
+	name: 'varnish',
+	on: settings.varnish,
+	errors: settings.getErrors('varnish')
+}) }}

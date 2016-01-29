@@ -60,22 +60,27 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->on('elements.onBeforeSaveElement', function(Event $event)
 		{
 
-			// Get the element
-			$element = $event->params['element'];
-
-			// Clear our cacheMonsterPaths cache, just in case
-			craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
-
-			// Get the paths we need
-			$paths = craft()->cacheMonster->getPaths($element);
-
-			if ($paths)
+			// Don’t bother doing anything if neither warming or purging is needed
+			if ($this->_settings['varnish'] || $this->_settings['warm'])
 			{
 
-				// Store them in the cache so we can get them after
-				// the element has actually saved
-				craft()->cache->set("cacheMonsterPaths-{$element->id}-{$element->locale}", $paths);
+				// Get the element
+				$element = $event->params['element'];
 
+				// Clear our cacheMonsterPaths cache, just in case
+				craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
+
+				// Get the paths we need
+				$paths = craft()->cacheMonster->getPaths($element);
+
+				if ($paths)
+				{
+
+					// Store them in the cache so we can get them after
+					// the element has actually saved
+					craft()->cache->set("cacheMonsterPaths-{$element->id}-{$element->locale}", $paths);
+
+				}
 			}
 
 		});
@@ -105,7 +110,10 @@ class CacheMonsterPlugin extends BasePlugin
 					craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
 				}
 
-				craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
+				if ($this->_settings['warm'])
+				{
+					craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
+				}
 
 			}
 
@@ -126,7 +134,8 @@ class CacheMonsterPlugin extends BasePlugin
 	protected function defineSettings()
 	{
 		return array(
-			'varnish' => array(AttributeType::Bool, 'default' => false)
+			'varnish' => array(AttributeType::Bool, 'default' => false),
+			'warm' => array(AttributeType::Bool, 'default' => true)
 		);
 	}
 

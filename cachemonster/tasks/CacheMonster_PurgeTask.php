@@ -102,7 +102,7 @@ class CacheMonster_PurgeTask extends BaseTask
 		// Log any exceptions
 		foreach ($batch->getExceptions() as $e)
 		{
-			Craft::log('CacheMonster: an exception occurred: '.$e->getMessage(), LogLevel::Error);
+			CacheMonsterPlugin::log('CacheMonster: an exception occurred: '.$e->getMessage(), LogLevel::Error);
 		}
 
 		// Clear any exceptions

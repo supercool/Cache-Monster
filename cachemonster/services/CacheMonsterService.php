@@ -139,6 +139,14 @@ class CacheMonsterService extends BaseApplicationComponent
 
 		}
 
+		// Get the cacheIds that are directly applicable to this element
+		$query = craft()->db->createCommand()
+			->selectDistinct('cacheId')
+			->from('templatecacheelements')
+			->where('elementId = :elementId', array(':elementId' => $elementId));
+
+		$this->_cacheIdsToBeDeleted = array_merge($this->_cacheIdsToBeDeleted, $query->queryColumn());
+
 		if ($this->_cacheIdsToBeDeleted)
 		{
 

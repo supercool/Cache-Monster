@@ -60,27 +60,27 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->on('elements.onBeforeSaveElement', function(Event $event)
 		{
 
-			// Get the element ID
-			$elementId = $event->params['element']->id;
+			// Get the element
+			$element = $event->params['element'];
 
-			// If we have an element, go ahead and get its paths
-			if ( $elementId )
+			// For some reason, this function gets called twice, once with an empty uri.
+			// We’re not interested in that.
+			if (empty($element->uri)) {
+				return;
+			}
+
+			// Clear our cacheMonsterPaths cache, just in case
+			craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
+
+			// Get the paths we need
+			$paths = craft()->cacheMonster->getPaths($element);
+
+			if ($paths)
 			{
 
-				// Clear our cacheMonsterPaths cache, just in case
-				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
-
-				// Get the paths we need
-				$paths = craft()->cacheMonster->getPaths($elementId);
-
-				if ($paths)
-				{
-
-					// Store them in the cache so we can get them after
-					// the element has actually saved
-					craft()->cache->set('cacheMonsterPaths-'.$elementId, $paths);
-
-				}
+				// Store them in the cache so we can get them after
+				// the element has actually saved
+				craft()->cache->set("cacheMonsterPaths-{$element->id}-{$element->locale}", $paths);
 
 			}
 
@@ -93,30 +93,25 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->on('elements.onSaveElement', function(Event $event)
 		{
 
-			// Get the element ID
-			$elementId = $event->params['element']->id;
+			// Get the element
+			$element = $event->params['element'];
 
-			if ($elementId)
+			// Get the paths out of the cache for that element
+			$paths = craft()->cache->get("cacheMonsterPaths-{$element->id}-{$element->locale}");
+
+			// Remove this, as it might cause issues if its used again
+			craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
+
+			// Use those paths to purge (if on) and warm
+			if ($paths)
 			{
 
-				// Get the paths out of the cache for that element
-				$paths = craft()->cache->get('cacheMonsterPaths-'.$elementId);
-
-				// Remove this, as it might cause issues if its used again
-				craft()->cache->delete('cacheMonsterPaths-'.$elementId);
-
-				// Use those paths to purge (if on) and warm
-				if ($paths)
+				if ($this->_settings['varnish'])
 				{
-
-					if ($this->_settings['varnish'])
-					{
-						craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
-					}
-
-					craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
-
+					craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
 				}
+
+				craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 
 			}
 

@@ -31,7 +31,7 @@ class CacheMonsterPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '0.9';
+		return '1.0.0';
 	}
 
 	public function getDeveloper()

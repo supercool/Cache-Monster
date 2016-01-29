@@ -63,12 +63,6 @@ class CacheMonsterPlugin extends BasePlugin
 			// Get the element
 			$element = $event->params['element'];
 
-			// For some reason, this function gets called twice, once with an empty uri.
-			// We’re not interested in that.
-			if (empty($element->uri)) {
-				return;
-			}
-
 			// Clear our cacheMonsterPaths cache, just in case
 			craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
 

@@ -90,17 +90,8 @@ class CacheMonsterPlugin extends BasePlugin
 				// Get the elementId
 				$elementId = $event->params['element']->id;
 
-				// Make a Varnish Task if we need to
-				if ($this->_settings['varnish'])
-				{
-					$this->_makeTask('CacheMonster_Purge', $elementId);
-				}
-
-				// Make a warming Task if we need to
-				if ($this->_settings['warm'])
-				{
-					$this->_makeTask('CacheMonster_Warm', $elementId);
-				}
+				// Make the manager Task that will fire the SubTasks
+				$this->_makeTask('CacheMonster_GetCachedPaths', $elementId);
 
 			}
 

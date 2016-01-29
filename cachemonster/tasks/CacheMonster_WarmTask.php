@@ -43,11 +43,20 @@ class CacheMonster_WarmTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		// Get the actual paths out of the settings
-		$paths = $this->getSettings()->paths;
+		$elementId = $this->getSettings()->elementId;
 
-		// Make our internal paths array
-		$this->_paths = array();
+		// Get the actual paths out of the cache
+		if (is_array($elementId)) {
+			$paths = array();
+			foreach ($elementId as $id) {
+				$cache = craft()->cache->get("cacheMonsterPaths-{$id}");
+				if ($cache) {
+					$paths = array_merge($paths, $cache)
+				}
+			}
+		} else {
+			$paths = craft()->cache->get("cacheMonsterPaths-{$elementId}");
+		}
 
 		// Split the $paths array into chunks of 20 - each step
 		// will be a batch of 20 requests
@@ -123,11 +132,8 @@ class CacheMonster_WarmTask extends BaseTask
 	protected function defineSettings()
 	{
 		return array(
-			'paths'  => AttributeType::Mixed
+			'elementId' => AttributeType::Mixed
 		);
 	}
-
-	// Private Methods
-	// =========================================================================
 
 }

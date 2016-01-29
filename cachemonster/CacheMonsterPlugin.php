@@ -55,7 +55,7 @@ class CacheMonsterPlugin extends BasePlugin
 
 		/**
 		 * Before we save, grab the paths that are going to be purged
-		 * and save them to a cache
+		 * and create a Task that will save them to a cache
 		 */
 		craft()->on('elements.onBeforeSaveElement', function(Event $event)
 		{
@@ -64,58 +64,42 @@ class CacheMonsterPlugin extends BasePlugin
 			if ($this->_settings['varnish'] || $this->_settings['warm'])
 			{
 
-				// Get the element
-				$element = $event->params['element'];
+				// Get the elementId
+				$elementId = $event->params['element']->id;
 
-				// Clear our cacheMonsterPaths cache, just in case
-				craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
+				// Dump any existing paths caches for this element
+				craft()->cache->delete("cacheMonsterPaths-{$elementId}");
 
-				// Get the paths we need
-				$paths = craft()->cacheMonster->getPaths($element);
+				// Make a Task that will get the paths and cache them
+				$this->_makeTask('CacheMonster_CachePaths', $elementId);
 
-				// Allow other plugins to add to modify the paths array before we save it into the cache
-				craft()->plugins->call('modifyCacheMonsterPaths', array($element, &$paths));
-
-				if ($paths)
-				{
-
-					// Store them in the cache so we can get them after
-					// the element has actually saved
-					craft()->cache->set("cacheMonsterPaths-{$element->id}-{$element->locale}", $paths);
-
-				}
 			}
 
 		});
 
-
 		/**
-		 * After the element has saved run the purging and warming tasks
+		 *
 		 */
 		craft()->on('elements.onSaveElement', function(Event $event)
 		{
 
-			// Get the element
-			$element = $event->params['element'];
-
-			// Get the paths out of the cache for that element
-			$paths = craft()->cache->get("cacheMonsterPaths-{$element->id}-{$element->locale}");
-
-			// Remove this, as it might cause issues if its used again
-			craft()->cache->delete("cacheMonsterPaths-{$element->id}-{$element->locale}");
-
-			// Use those paths to purge (if on) and warm
-			if ($paths)
+			// Don’t bother doing anything if neither warming or purging is needed
+			if ($this->_settings['varnish'] || $this->_settings['warm'])
 			{
 
+				// Get the elementId
+				$elementId = $event->params['element']->id;
+
+				// Make a Varnish Task if we need to
 				if ($this->_settings['varnish'])
 				{
-					craft()->cacheMonster->makeTask('CacheMonster_Purge', $paths);
+					$this->_makeTask('CacheMonster_Purge', $elementId);
 				}
 
+				// Make a warming Task if we need to
 				if ($this->_settings['warm'])
 				{
-					craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
+					$this->_makeTask('CacheMonster_Warm', $elementId);
 				}
 
 			}
@@ -140,6 +124,56 @@ class CacheMonsterPlugin extends BasePlugin
 			'varnish' => array(AttributeType::Bool, 'default' => false),
 			'warm' => array(AttributeType::Bool, 'default' => true)
 		);
+	}
+
+	// Private Methods
+	// =========================================================================
+
+	/**
+	 * Registers a Task with Craft, taking into account if there
+	 * is already one pending
+	 *
+	 * @method makeTask
+	 * @param  string     $taskName   the name of the Task you want to register
+	 * @param  int|array  $elementId
+	 */
+	private function _makeTask($taskName, $elementId)
+	{
+
+		$task = craft()->tasks->getNextPendingTask($taskName);
+
+		if ($task && is_array($task->settings))
+		{
+			$settings = $task->settings;
+
+			if (!is_array($settings['elementId']))
+			{
+				$settings['elementId'] = array($settings['elementId']);
+			}
+
+			if (is_array($elementId))
+			{
+				$settings['elementId'] = array_merge($settings['elementId'], $elementId);
+			}
+			else
+			{
+				$settings['elementId'][] = $elementId;
+			}
+
+			// Make sure there aren't any duplicate element IDs
+			$settings['elementId'] = array_unique($settings['elementId']);
+
+			// Set the new settings and save the task
+			$task->settings = $settings;
+			craft()->tasks->saveTask($task, false);
+		}
+		else
+		{
+			craft()->tasks->createTask($taskName, null, array(
+				'elementId' => $elementId
+			));
+		}
+
 	}
 
 }

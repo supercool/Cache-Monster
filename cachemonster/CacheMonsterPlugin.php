@@ -73,6 +73,9 @@ class CacheMonsterPlugin extends BasePlugin
 				// Get the paths we need
 				$paths = craft()->cacheMonster->getPaths($element);
 
+				// Allow other plugins to add to modify the paths array before we save it into the cache
+				craft()->plugins->call('modifyCacheMonsterPaths', array($element, &$paths));
+
 				if ($paths)
 				{
 

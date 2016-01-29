@@ -4,6 +4,10 @@
 		"date"    : "29-1-2016",
 		"notes"   : [
 			{
+				"type"    : "added",
+				"message" : "Added a setting to allow the warming behaviour to be turned off."
+			},
+			{
 				"type"    : "improved",
 				"message" : "Improved the logic that works out which cache ids to delete to match that which Craft uses to determine which caches to delete."
 			},

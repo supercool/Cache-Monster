@@ -67,8 +67,27 @@ class CacheMonsterPlugin extends BasePlugin
 				// Get the elementId
 				$elementId = $event->params['element']->id;
 
-				// Dump any existing paths caches for this element
-				craft()->cache->delete("cacheMonsterPaths-{$elementId}");
+				// NOTE: this works, but not if we run it in the Task!
+				//
+				// // What type of element(s) are we dealing with?
+				// $elementType = craft()->elements->getElementTypeById($elementId);
+				//
+				//
+				// $query = craft()->db->createCommand()
+				// 	->from('templatecachecriteria');
+				//
+				// if (is_array($elementType))
+				// {
+				// 	$query->where(array('in', 'type', $elementType));
+				// }
+				// else
+				// {
+				// 	$query->where('type = :type', array(':type' => $elementType));
+				// }
+				//
+				// // Figure out how many rows we're dealing with
+				// $totalRows = $query->count('id');
+				// Craft::dd($totalRows);
 
 				// Make a Task that will get the paths and cache them
 				$this->_makeTask('CacheMonster_CachePaths', $elementId);
@@ -91,7 +110,7 @@ class CacheMonsterPlugin extends BasePlugin
 				$elementId = $event->params['element']->id;
 
 				// Make the manager Task that will fire the SubTasks
-				$this->_makeTask('CacheMonster_GetCachedPaths', $elementId);
+				craft()->tasks->createTask('CacheMonster_GetCachedPaths');
 
 			}
 

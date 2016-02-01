@@ -104,6 +104,10 @@ class CacheMonster_CachePathsTask extends BaseTask
 		$this->_cacheIdsToBeDeleted = array();
 		$this->_totalCriteriaRowsToBeDeleted = 0;
 
+		// NOTE: Always returning 0 right now ...
+		CacheMonsterPlugin::log('Running.', LogLevel::Info);
+		CacheMonsterPlugin::log('Count: '.$totalRows, LogLevel::Info);
+
 		return $totalRows;
 	}
 
@@ -168,11 +172,11 @@ class CacheMonster_CachePathsTask extends BaseTask
 			}
 		}
 
-		// Get the cacheIds that are directly applicable to this element
+		// Get the cacheIds that are directly applicable to these elements
 		$query = craft()->db->createCommand()
 			->selectDistinct('cacheId')
 			->from('templatecacheelements')
-			->where('elementId = :elementId', array(':elementId' => $elementId));
+			->where(array('in', 'elementId', $this->_elementIds));
 
 		$this->_cacheIdsToBeDeleted = array_merge($this->_cacheIdsToBeDeleted, $query->queryColumn());
 
@@ -195,16 +199,16 @@ class CacheMonster_CachePathsTask extends BaseTask
 				}
 
 				// Store them in the cache so we can get at them later on, merging with
-				// any already there
-				// $cachedPaths = craft()->cache->get("cacheMonsterPaths-{$elementId}");
-				//
-				// if ($cachedPaths) {
-				// 	$paths = array_merge($cachedPaths, $paths);
-				// }
-				//
-				// $paths = array_unique($paths);
-				craft()->cache->set("cacheMonsterPaths-{$elementId}", $paths);
+				// any already there (i.e. this Task has had elements appended to it)
+				$cachedPaths = craft()->cache->get("cacheMonsterPaths");
 
+				if ($cachedPaths) {
+					$paths = array_merge($cachedPaths, $paths);
+				}
+
+				$paths = array_unique($paths);
+
+				craft()->cache->set("cacheMonsterPaths", $paths);
 			}
 
 		}

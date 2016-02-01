@@ -67,7 +67,7 @@ class CacheMonster_PurgeTask extends BaseTask
 	public function runStep($step)
 	{
 
-		// NOTE: Perhaps much of this should be moved into a service
+		// TODO: Perhaps much of this should be moved into a service
 
 		$batch = \Guzzle\Batch\BatchBuilder::factory()
 						->transferRequests(20)

@@ -19,12 +19,12 @@ class CacheMonster_GetCachedPathsTask extends BaseTask
 	/**
 	 * @var
 	 */
-	private $_elementIds;
+	private $_plugin;
 
 	/**
 	 * @var
 	 */
-	private $_plugin;
+	private $_paths;
 
 
 	// Public Methods
@@ -48,7 +48,6 @@ class CacheMonster_GetCachedPathsTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
-		$this->_elementIds = $this->getSettings()->elementId;
 		$this->_plugin = craft()->plugins->getPlugin('cachemonster');
 
 		return 2;
@@ -64,51 +63,34 @@ class CacheMonster_GetCachedPathsTask extends BaseTask
 	public function runStep($step)
 	{
 
-		// Get the actual paths out of the cache
-		$paths = array();
-		foreach ($this->_elementIds as $id) {
-			$cache = craft()->cache->get("cacheMonsterPaths-{$id}");
-			if ($cache) {
-				$paths = array_merge($paths, $cache)
-			}
+		// Get the actual paths out of the cache and dump it ready
+		// for the next time it gets used
+		if (!$this->_paths) {
+			$this->_paths = craft()->cache->get("cacheMonsterPaths");
+			// craft()->cache->delete("cacheMonsterPaths");
 		}
 
 		// Make the SubTasks
 		if ($step == 0) {
-			if ($this->_plugin->getSettings()['varnish'])
+			if ($this->_plugin->getSettings()['varnish'] && $this->_paths)
 			{
 				return $this->runSubTask('CacheMonster_Purge', null, array(
-					'paths' => $paths
+					'paths' => $this->_paths
 				));
 			} else {
 				return true;
 			}
 		} elseif ($step == 1) {
-			if ($this->_plugin->getSettings()['warm'])
+			if ($this->_plugin->getSettings()['warm'] && $this->_paths)
 			{
 				return $this->runSubTask('CacheMonster_Warm', null, array(
-					'paths' => $paths
+					'paths' => $this->_paths
 				));
 			} else {
 				return true;
 			}
 		}
 
-	}
-
-	// Protected Methods
-	// =========================================================================
-
-	/**
-	 * @inheritDoc BaseSavableComponentType::defineSettings()
-	 *
-	 * @return array
-	 */
-	protected function defineSettings()
-	{
-		return array(
-			'elementId' => AttributeType::Mixed
-		);
 	}
 
 }

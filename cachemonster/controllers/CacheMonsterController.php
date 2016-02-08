@@ -23,17 +23,20 @@ class CacheMonsterController extends BaseController
 	public function actionCrawlAndWarm()
 	{
 
-		// Delete all the template caches!
-		craft()->templateCache->deleteAllCaches();
-
 		// Crawl the sitemap
 		$paths = craft()->cacheMonster->crawlSitemapForPaths();
 
-		// Check we have something and make warmer if we do
-		if ($paths)
+		// Check we have something
+		if (!$paths)
 		{
-			craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
+			throw new Exception(Craft::t('No paths found in “{url}”.', array('url' => UrlHelper::getSiteUrl('sitemap.xml'))));
 		}
+
+		// Delete all the template caches!
+		craft()->templateCache->deleteAllCaches();
+
+		// Make task to warm the template caches
+		craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 
 		// Run any pending tasks
 		if (!craft()->tasks->isTaskRunning())

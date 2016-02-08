@@ -39,26 +39,7 @@ class CacheMonsterController extends BaseController
 		craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
 
 		// Run any pending tasks
-		if (!craft()->tasks->isTaskRunning())
-		{
-			// Is there a pending task?
-			$task = craft()->tasks->getNextPendingTask();
-
-			if ($task)
-			{
-				// Attempt to close the connection if this is an Ajax request
-				if (craft()->request->isAjaxRequest())
-				{
-					craft()->request->close();
-				}
-
-				// Start running tasks
-				craft()->tasks->runPendingTasks();
-			}
-		}
-
-		// Exit
-		craft()->end();
+		craft()->runController('tasks/runPendingTasks');
 
 	}
 

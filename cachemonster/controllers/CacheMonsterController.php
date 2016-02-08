@@ -43,4 +43,44 @@ class CacheMonsterController extends BaseController
 
 	}
 
+	/**
+	 * Updates the cached templates for the given cache keys.
+	 *
+	 * @return null
+	 */
+	public function actionWarmByKeys()
+	{
+
+		$cacheKeys = craft()->request->getRequiredParam('cacheKeys');
+
+		if (!is_array($cacheKeys))
+		{
+			$cacheKeys = array($cacheKeys);
+		}
+
+		// Get the template paths for the caches with the given cache keys
+		$query = craft()->db->createCommand()
+			->selectDistinct('path')
+			->from('templatecaches')
+			->where(array('in', 'cacheKey', $cacheKeys));
+
+		$paths = $query->queryColumn();
+
+		// Check we have something
+		if (!$paths)
+		{
+			throw new Exception(Craft::t('No cached templates found for the given keys.'));
+		}
+
+		// Delete the template caches
+		craft()->templateCache->deleteCachesByKey($cacheKeys);
+
+		// Make task to warm the template caches
+		craft()->cacheMonster->makeTask('CacheMonster_Warm', $paths);
+
+		// Run any pending tasks
+		craft()->runController('tasks/runPendingTasks');
+
+	}
+
 }

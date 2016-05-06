@@ -45,6 +45,15 @@ class CacheMonsterPlugin extends BasePlugin
 
 	}
 
+	/**
+	 * @return CacheMonsterTwigExtension
+	 */
+	public function addTwigExtension()
+	{
+		Craft::import('plugins.cachemonster.twigextensions.*');
+		return new CacheMonsterTwigExtension();
+	}
+
 	public function getSettingsHtml()
 	{
 		return craft()->templates->render('cacheMonster/settings', array(

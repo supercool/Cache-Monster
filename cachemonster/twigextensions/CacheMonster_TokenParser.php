@@ -21,11 +21,11 @@ class CacheMonster_TokenParser extends \Twig_TokenParser
 	 */
 	public function getTag()
 	{
-		return 'cache';
+		return 'cachemonster';
 	}
 
 	/**
-	 * Parses {% cache %}...{% endcache %} tags.
+	 * Parses {% cachemonster %}...{% endcachemonster %} tags.
 	 *
 	 * @param \Twig_Token $token
 	 *
@@ -90,7 +90,7 @@ class CacheMonster_TokenParser extends \Twig_TokenParser
 		$nodes['body'] = $this->parser->subparse(array($this, 'decideCacheEnd'), true);
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new Cache_Node($nodes, $attributes, $lineno, $this->getTag());
+		return new CacheMonster_Node($nodes, $attributes, $lineno, $this->getTag());
 	}
 
 	/**
@@ -100,6 +100,6 @@ class CacheMonster_TokenParser extends \Twig_TokenParser
 	 */
 	public function decideCacheEnd(\Twig_Token $token)
 	{
-		return $token->test('endcache');
+		return $token->test('endcachemonster');
 	}
 }

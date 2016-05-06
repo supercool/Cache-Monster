@@ -61,7 +61,7 @@ class CacheMonster_PurgeInternalCachesTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Deleting stale template caches');
+		return Craft::t('Purging internal CacheMonster caches');
 	}
 
 	/**
@@ -190,7 +190,7 @@ class CacheMonster_PurgeInternalCachesTask extends BaseTask
 	private function _getQuery()
 	{
 		$query = craft()->db->createCommand()
-			->from('templatecachecriteria');
+			->from('cachemonster_templatecachecriteria');
 
 		if (is_array($this->_elementType))
 		{

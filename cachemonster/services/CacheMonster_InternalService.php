@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Class CacheMonsterService
+ * Class CacheMonster_InternalService
  *
  * Forked from `TemplateCacheService` at 2.6.2784
  *
@@ -11,7 +11,7 @@ namespace Craft;
  * @copyright Copyright (c) 2016, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
-class CacheMonsterService extends BaseApplicationComponent
+class CacheMonster_InternalService extends BaseApplicationComponent
 {
 	// Properties
 	// =========================================================================
@@ -21,21 +21,21 @@ class CacheMonsterService extends BaseApplicationComponent
 	 *
 	 * @var string
 	 */
-	private static $_templateCachesTable = 'templatecaches';
+	private static $_templateCachesTable = 'cachemonster_templatecaches';
 
 	/**
 	 * The table that template cache-element relations are stored in.
 	 *
 	 * @var string
 	 */
-	private static $_templateCacheElementsTable = 'templatecacheelements';
+	private static $_templateCacheElementsTable = 'cachemonster_templatecacheelements';
 
 	/**
 	 * The table that queries used within template caches are stored in.
 	 *
 	 * @var string
 	 */
-	private static $_templateCacheCriteriaTable = 'templatecachecriteria';
+	private static $_templateCacheCriteriaTable = 'cachemonster_templatecachecriteria';
 
 	/**
 	 * The duration (in seconds) between the times when Craft will delete any expired template caches.
@@ -443,8 +443,8 @@ class CacheMonsterService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
-			// If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
-			$task = craft()->tasks->getNextPendingTask('DeleteStaleTemplateCaches');
+			// If there are any pending CacheMonster_PurgeInternalCaches tasks, just append this element to it
+			$task = craft()->tasks->getNextPendingTask('CacheMonster_PurgeInternalCaches');
 
 			if ($task && is_array($task->settings))
 			{
@@ -473,7 +473,7 @@ class CacheMonsterService extends BaseApplicationComponent
 			}
 			else
 			{
-				craft()->tasks->createTask('DeleteStaleTemplateCaches', null, array(
+				craft()->tasks->createTask('CacheMonster_PurgeInternalCaches', null, array(
 					'elementId' => $elementId
 				));
 			}
@@ -589,12 +589,12 @@ class CacheMonsterService extends BaseApplicationComponent
 			return false;
 		}
 
-		$lastCleanupDate = craft()->cache->get('lastTemplateCacheCleanupDate');
+		$lastCleanupDate = craft()->cache->get('cachemonster_lastTemplateCacheCleanupDate');
 
 		if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration)
 		{
 			// Don't do it again for a while
-			craft()->cache->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+			craft()->cache->set('cachemonster_lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
 
 			return $this->deleteExpiredCaches();
 		}

@@ -43,8 +43,8 @@ class CacheMonster_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write("\$cacheService = \Craft\craft()->templateCache;\n")
-			->write("\$ignoreCache{$n} = (\Craft\craft()->request->isLivePreview() || \Craft\craft()->request->getToken()");
+			->write("\$cacheMonsterService = \Craft\craft()->cacheMonster_internal;\n")
+			->write("\$ignoreCacheMonster{$n} = (\Craft\craft()->request->isLivePreview() || \Craft\craft()->request->getToken()");
 
 		if ($conditions)
 		{
@@ -63,7 +63,7 @@ class CacheMonster_Node extends \Twig_Node
 
 		$compiler
 			->raw(");\n")
-			->write("if (!\$ignoreCache{$n}) {\n")
+			->write("if (!\$ignoreCacheMonster{$n}) {\n")
 			->indent()
 				->write("\$cacheKey{$n} = ");
 

@@ -12,6 +12,8 @@ namespace Craft;
 class CacheMonster_ExternalVarnishService extends BaseApplicationComponent
 {
 
+	// TODO: this should implement an interface - and possibly extend a base class
+
 	/**
 	 * Purges the given paths
 	 *

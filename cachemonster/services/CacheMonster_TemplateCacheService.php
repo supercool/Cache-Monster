@@ -345,7 +345,10 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			$params = array(':id' => $cacheId);
 		}
 
-		// TODO: grab paths about to be deleted and send through external purging task
+		// Pass the ids off to be purged externally
+		$this->_purgeExternalCachesByCacheId($cacheId);
+
+		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
 	}
@@ -374,7 +377,10 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		if ($cacheIds)
 		{
-			// TODO: grab paths about to be deleted and send through external purging task
+			// Pass the ids off to be purged externally
+			$this->_purgeExternalCachesByCacheId($cacheIds);
+
+			// Delete them
 			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
 		}
 
@@ -546,14 +552,29 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 		{
 			$condition = array('in', 'cacheKey', $key);
 			$params = array();
+
+			$keysToPurge = $key;
 		}
 		else
 		{
 			$condition = 'cacheKey = :cacheKey';
 			$params = array(':cacheKey' => $key);
+
+			$keysToPurge = array($key);
 		}
 
-		// TODO: grab paths about to be deleted and send through external purging task
+		// Get the cache ids about to be deleted
+		$query = craft()->db->createCommand()
+			->select('id')
+			->from('cachemonster_templatecaches')
+			->where(array('in', 'cacheKey', $keysToPurge));
+
+		$cacheIds = $query->queryColumn();
+
+		// Pass the ids off to be purged externally
+		$this->_purgeExternalCachesByCacheId($cacheIds);
+
+		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
 	}
@@ -570,7 +591,18 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		// TODO: grab paths about to be deleted and send through external purging task
+		// Get the cache ids about to be deleted
+		$query = craft()->db->createCommand()
+			->select('id')
+			->from('cachemonster_templatecaches')
+			->where('expiryDate <= :now', array('now' => DateTimeHelper::currentTimeForDb()));
+
+		$cacheIds = $query->queryColumn();
+
+		// Pass the ids off to be purged externally
+		$this->_purgeExternalCachesByCacheId($cacheIds);
+
+		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
 			'expiryDate <= :now',
 			array('now' => DateTimeHelper::currentTimeForDb())
@@ -624,7 +656,17 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$this->_deletedAllCaches = true;
 
-		// TODO: grab paths about to be deleted and send through external purging task
+		// Get the cache ids about to be deleted
+		$query = craft()->db->createCommand()
+			->select('id')
+			->from('cachemonster_templatecaches');
+
+		$cacheIds = $query->queryColumn();
+
+		// Pass the ids off to be purged externally
+		$this->_purgeExternalCachesByCacheId($cacheIds);
+
+		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}

@@ -47,6 +47,10 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	 */
 	public function getTotalSteps()
 	{
+
+		// TODO: work out the service from the plugin settings
+		$this->_service = 'Varnish';
+
 		// Get the actual paths out of the settings
 		$this->_paths = $this->getSettings()->paths;
 
@@ -69,6 +73,20 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	{
 		$service = 'cacheMonster_external'.$this->_service;
 		return craft()->$service->purgePaths($this->_paths[$step]);
+	}
+
+	// Protected Methods
+	// =========================================================================
+	/**
+	 * @inheritDoc BaseSavableComponentType::defineSettings()
+	 *
+	 * @return array
+	 */
+	protected function defineSettings()
+	{
+		return array(
+			'paths'  => AttributeType::Mixed
+		);
 	}
 
 }

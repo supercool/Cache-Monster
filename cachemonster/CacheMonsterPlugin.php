@@ -43,6 +43,38 @@ class CacheMonsterPlugin extends BasePlugin
 	public function init()
 	{
 
+		/**
+		 * Here we are making sure to add the element ids and element criteria to
+		 * our db tables in between the start and end of our cache tags.
+		 *
+		 * The only way we can do this for the element ids at present is to listen
+		 * to the global element population events - this is not ideal as it means
+		 * our replacement cache service gets fired up each time this happens,
+		 * rather than just when a template gets rendered on the front end.
+		 */
+
+		// Raised when all of the element models have been populated from an element query.
+		craft()->on('elements.onPopulateElements', function(Event $event)
+		{
+			$criteria = $event->params['criteria'];
+			craft()->cacheMonster_templateCache->includeCriteriaInTemplateCaches($criteria);
+		});
+
+		// Raised when any element model is populated from its database result.
+		craft()->on('elements.onPopulateElement', function(Event $event)
+		{
+			$element = $event->params['element'];
+
+			if (is_object($element) && $element instanceof BaseElementModel)
+			{
+				$elementId = $element->id;
+				if ($elementId)
+				{
+					craft()->cacheMonster_templateCache->includeElementInTemplateCaches($elementId);
+				}
+			}
+		});
+
 	}
 
 	public function onBeforeInstall()

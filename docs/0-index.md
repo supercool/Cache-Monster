@@ -12,9 +12,4 @@ To install CacheMonster, follow these steps:
 
 ## Requirements
 
-This plugin requires Craft 2.3 or greater and has only been tested on PHP versions 5.5.x and 5.6.x.
-
-## Roadmap
-
-- Write documentation
-- Allow admins to set the paths of their sitemaps in the cp
+This plugin has been tested on Craft 2.6.x and PHP 7.0.x - other version will probably work but have not been checked.

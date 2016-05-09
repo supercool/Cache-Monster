@@ -78,7 +78,7 @@ class CacheMonster_Node extends \Twig_Node
 
 		$compiler
 				->raw(";\n")
-				->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
+				->write("\$cacheBody{$n} = \$cacheMonsterService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
 			->outdent()
 			->write("} else {\n")
 			->indent()
@@ -87,17 +87,17 @@ class CacheMonster_Node extends \Twig_Node
 			->write("}\n")
 			->write("if (\$cacheBody{$n} === null) {\n")
 			->indent()
-				->write("if (!\$ignoreCache{$n}) {\n")
+				->write("if (!\$ignoreCacheMonster{$n}) {\n")
 				->indent()
-					->write("\$cacheService->startTemplateCache(\$cacheKey{$n});\n")
+					->write("\$cacheMonsterService->startTemplateCache(\$cacheKey{$n});\n")
 				->outdent()
 				->write("}\n")
 				->write("ob_start();\n")
 				->subcompile($this->getNode('body'))
 				->write("\$cacheBody{$n} = ob_get_clean();\n")
-				->write("if (!\$ignoreCache{$n}) {\n")
+				->write("if (!\$ignoreCacheMonster{$n}) {\n")
 				->indent()
-					->write("\$cacheService->endTemplateCache(\$cacheKey{$n}, {$global}, ");
+					->write("\$cacheMonsterService->endTemplateCache(\$cacheKey{$n}, {$global}, ");
 
 		if ($durationNum)
 		{

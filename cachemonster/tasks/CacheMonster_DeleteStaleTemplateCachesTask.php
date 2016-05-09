@@ -155,7 +155,7 @@ class CacheMonster_DeleteStaleTemplateCachesTask extends BaseTask
 			if (array_intersect($criteria->ids(), $this->_elementIds))
 			{
 				// Delete this cache
-				craft()->templateCache->deleteCacheById($row['cacheId']);
+				craft()->cacheMonster_templateCache->deleteCacheById($row['cacheId']);
 				$this->_deletedCacheIds[] = $row['cacheId'];
 				$this->_totalDeletedCriteriaRows++;
 			}

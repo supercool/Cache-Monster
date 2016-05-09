@@ -75,6 +75,87 @@ class CacheMonsterPlugin extends BasePlugin
 			}
 		});
 
+
+		/**
+		 * Here we are listening to the global events for when an element gets
+		 * updated so we can remove the correct caches.
+		 */
+		// Can probably all be done in the onSave/onBeforeDelete element events
+		//
+		// NOTE: we need to replicate every time the following core functions get used:
+		//       DONE: deleteCacheById
+		//       deleteCachesByElementType
+		//           - ResaveElementsTask - on init, probably don’t need it
+		//           - ElementsService::deleteElementsByType - could use delete event
+		//       deleteCachesByElement
+		//       deleteCachesByElementId
+		//       deleteCachesByCriteria
+		//       deleteCachesByKey
+		//       deleteExpiredCaches
+		//       deleteExpiredCachesIfOverdue
+		//       deleteAllCaches
+
+
+
+// elements.onBeforeDeleteElements #
+//
+// Raised by	ElementsService::deleteElementById()
+// Raised right before any elements are about to be deleted.
+//
+// Params:
+//
+// elementIds – The element IDs that are about to be deleted.
+//
+//
+//
+//
+//
+//
+// elements.onSaveElement #
+
+// Raised by	ElementsService::saveElement()
+// Raised when an element is saved.
+//
+// Params:
+//
+// element – A BaseElementModel object representing the element that was just saved.
+// isNewElement – A boolean indicating whether this is a brand new element.
+//
+//
+//
+//
+//
+//
+// elements.onPerformAction #
+
+// Raised by	ElementIndexController::actionPerformAction()
+// Raised after a batch element action has been performed.
+//
+// Params:
+//
+// action – The element action class that performed the action.
+// criteria – The ElementCriteriaModel object that defines which element(s) the user had chosen to perform the action on.
+//
+//
+//
+//
+//
+//
+//
+//
+//
+// structures.onMoveElement #
+
+// Raised by	StructuresService::prepend(), StructuresService::append(), StructuresService::prependToRoot(), StructuresService::appendToRoot(), StructuresService::moveBefore(), StructuresService::moveAfter()
+// Raised when an element is moved within a structure.
+//
+// Params:
+//
+// structureId – The ID of the structure that the element was moved within.
+// element – A BaseElementModel object representing the element that was moved.
+
+
+
 	}
 
 	public function onBeforeInstall()

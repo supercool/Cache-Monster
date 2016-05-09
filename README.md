@@ -18,3 +18,5 @@ Caching on steroids for Craft CMS.
 6. When it purges or warms the cache, raise an event before and after so other interested parties can get involved.
 
 7. Add flags / tags ala https://github.com/mmikkel/CacheFlag-Craft
+
+8. Provide a view in the cp for manually purging or warming caches

@@ -388,6 +388,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function deleteCachesByElement($elements)
 	{
+
 		if ($this->_deletedAllCaches || !$this->_isTemplateCachingEnabled())
 		{
 			return false;

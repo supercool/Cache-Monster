@@ -53,8 +53,8 @@ class CacheMonsterPlugin extends BasePlugin
 		 * rather than just when a template gets rendered on the front end.
 		 */
 
-		// Raised when all of the element models have been populated from an element query.
-		craft()->on('elements.onPopulateElements', function(Event $event)
+		// Raised after Craft has built out an elements query, enabling plugins to modify the query.
+		craft()->on('elements.onBuildElementsQuery', function(Event $event)
 		{
 			$criteria = $event->params['criteria'];
 			craft()->cacheMonster_templateCache->includeCriteriaInTemplateCaches($criteria);
@@ -80,81 +80,119 @@ class CacheMonsterPlugin extends BasePlugin
 		 * Here we are listening to the global events for when an element gets
 		 * updated so we can remove the correct caches.
 		 */
-		// Can probably all be done in the onSave/onBeforeDelete element events
-		//
-		// NOTE: we need to replicate every time the following core functions get used:
-		//       DONE: deleteCacheById
-		//       deleteCachesByElementType
-		//           - ResaveElementsTask - on init, probably don’t need it
-		//           - ElementsService::deleteElementsByType - could use delete event
-		//       deleteCachesByElement
-		//       deleteCachesByElementId
-		//       deleteCachesByCriteria
-		//       deleteCachesByKey
-		//       deleteExpiredCaches
-		//       deleteExpiredCachesIfOverdue
-		//       deleteAllCaches
 
+		// Raised right before any elements are about to be deleted.
+		craft()->on('elements.onBeforeDeleteElements', function(Event $event)
+		{
+			$elementIds = $event->params['elementIds'];
+			if ($elementIds)
+			{
+				craft()->cacheMonster_templateCache->deleteCachesByElementId($elementIds);
+			}
+		});
 
+		// Raised right before an element is saved.
+		craft()->on('elements.onSaveElement', function(Event $event)
+		{
+			$element = $event->params['element'];
+			if ($element) {
+				craft()->cacheMonster_templateCache->deleteCachesByElement($element);
+			}
+		});
 
-// elements.onBeforeDeleteElements #
-//
-// Raised by	ElementsService::deleteElementById()
-// Raised right before any elements are about to be deleted.
-//
-// Params:
-//
-// elementIds – The element IDs that are about to be deleted.
-//
-//
-//
-//
-//
-//
-// elements.onSaveElement #
+		// Raised after a batch element action has been performed.
+		craft()->on('elements.onPerformAction', function(Event $event)
+		{
+			$criteria = $event->params['criteria'];
+			if ($criteria->id) {
+				craft()->cacheMonster_templateCache->deleteCachesByElementId($criteria->id);
+			}
+		});
 
-// Raised by	ElementsService::saveElement()
-// Raised when an element is saved.
-//
-// Params:
-//
-// element – A BaseElementModel object representing the element that was just saved.
-// isNewElement – A boolean indicating whether this is a brand new element.
-//
-//
-//
-//
-//
-//
-// elements.onPerformAction #
+		// Raised when an element is moved within a structure.
+		craft()->on('structures.onMoveElement', function(Event $event)
+		{
+			$element = $event->params['element'];
+			if ($element) {
+				craft()->cacheMonster_templateCache->deleteCachesByElement($element);
+			}
+		});
 
-// Raised by	ElementIndexController::actionPerformAction()
-// Raised after a batch element action has been performed.
-//
-// Params:
-//
-// action – The element action class that performed the action.
-// criteria – The ElementCriteriaModel object that defines which element(s) the user had chosen to perform the action on.
-//
-//
-//
-//
-//
-//
-//
-//
-//
-// structures.onMoveElement #
+		// Raised right before a user is deleted.
+		// NOTE: untested
+		craft()->on('users.onBeforeDeleteUser', function(Event $event)
+		{
+			$user = $event->params['user'];
+			$transferContentTo = $event->params['transferContentTo'];
 
-// Raised by	StructuresService::prepend(), StructuresService::append(), StructuresService::prependToRoot(), StructuresService::appendToRoot(), StructuresService::moveBefore(), StructuresService::moveAfter()
-// Raised when an element is moved within a structure.
-//
-// Params:
-//
-// structureId – The ID of the structure that the element was moved within.
-// element – A BaseElementModel object representing the element that was moved.
+			// Should we transfer the content to a new user?
+			if ($user && $transferContentTo) {
 
+				// Get the entry IDs that belong to this user
+				$entryIds = craft()->db->createCommand()
+					->select('id')
+					->from('entries')
+					->where(array('authorId' => $user->id))
+					->queryColumn();
 
+				// Delete the template caches for any entries authored by this user
+				if ($entryIds) {
+					craft()->cacheMonster_templateCache->deleteCachesByElementId($entryIds);
+				}
+			}
+		});
+
+		// Raised right before a user is deleted.
+		// NOTE: untested
+		craft()->on('i18n.onBeforeDeleteLocale', function(Event $event)
+		{
+			$localeId = $event->params['localeId'];
+			$transferContentTo = $event->params['transferContentTo'];
+
+			// Is the content being transferred?
+			if ($transferContentTo) {
+
+				// Get the section IDs that are enabled for this locale
+				$sectionIds = craft()->db->createCommand()
+					->select('sectionId')
+					->from('sections_i18n')
+					->where(array('locale' => $localeId))
+					->queryColumn();
+
+				// Figure out which ones are *only* enabled for this locale
+				$soloSectionIds = array();
+
+				foreach ($sectionIds as $sectionId)
+				{
+					$sectionLocales = craft()->sections->getSectionLocales($sectionId);
+
+					if (count($sectionLocales) == 1 && $sectionLocales[0]->locale == $localeId)
+					{
+						$soloSectionIds[] = $sectionId;
+					}
+				}
+
+				// Did we find any?
+				if ($soloSectionIds)
+				{
+
+					// Get all of the entry IDs in those sections
+					$entryIds = craft()->db->createCommand()
+						->select('id')
+						->from('entries')
+						->where(array('in', 'sectionId', $soloSectionIds))
+						->queryColumn();
+
+					// Delete the template caches for any entries about to be moved to a different section
+					if ($entryIds) {
+						craft()->cacheMonster_templateCache->deleteCachesByElementId($entryIds);
+					}
+
+				}
+
+			}
+
+		});
 
 	}
 

@@ -682,4 +682,74 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			return true;
 		}
 	}
+
+
+	/**
+	 * Purges a cache for an external service by its ID(s).
+	 *
+	 * @param int|array $cacheId The cache ID.
+	 *
+	 * @return array|bool
+	 */
+	private function _purgeExternalCachesByCacheId($cacheId)
+	{
+
+		// Make $cacheId an array if not
+		if (!is_array($cacheId))
+		{
+			$cacheId = array($cacheId);
+		}
+
+		// Get the paths that those caches related to
+		$query = craft()->db->createCommand()
+			->selectDistinct('path')
+			->from('cachemonster_templatecaches')
+			->where(array('in', 'id', $cacheId));
+
+		$paths = $query->queryColumn();
+
+		if ($paths) {
+
+			// If there are any pending CacheMonster_PurgeExternalCaches tasks, just append this element to it
+			$task = craft()->tasks->getNextPendingTask('CacheMonster_PurgeExternalCaches');
+
+			if ($task && is_array($task->settings))
+			{
+				$settings = $task->settings;
+
+				if (!is_array($settings['paths']))
+				{
+					$settings['paths'] = array($settings['paths']);
+				}
+
+				if (is_array($paths))
+				{
+					$settings['paths'] = array_merge($settings['paths'], $paths);
+				}
+				else
+				{
+					$settings['paths'][] = $paths;
+				}
+
+				// Make sure there aren't any duplicate paths
+				$settings['paths'] = array_unique($settings['paths']);
+
+				// Set the new settings and save the task
+				$task->settings = $settings;
+				craft()->tasks->saveTask($task, false);
+			}
+			else
+			{
+				craft()->tasks->createTask('CacheMonster_PurgeExternalCaches', null, array(
+					'paths' => !is_array($paths) ? array($paths) : $paths
+				));
+			}
+
+			return $paths;
+		} else {
+			return false;
+		}
+
+	}
+
 }

@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * CacheMonster delete stale template caches
+ * Deletes stale template caches
  *
  * Forked from `DeleteStaleTemplateCachesTask` at 2.6.2784
  *

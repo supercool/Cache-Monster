@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Class CacheMonster_InternalService
+ * Class CacheMonster_TemplateCacheService
  *
  * Forked from `TemplateCacheService` at 2.6.2784
  *
@@ -11,7 +11,7 @@ namespace Craft;
  * @copyright Copyright (c) 2016, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
-class CacheMonster_InternalService extends BaseApplicationComponent
+class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 {
 	// Properties
 	// =========================================================================
@@ -443,8 +443,8 @@ class CacheMonster_InternalService extends BaseApplicationComponent
 
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
 		{
-			// If there are any pending CacheMonster_PurgeInternalCaches tasks, just append this element to it
-			$task = craft()->tasks->getNextPendingTask('CacheMonster_PurgeInternalCaches');
+			// If there are any pending CacheMonster_DeleteStaleTemplateCachesTask tasks, just append this element to it
+			$task = craft()->tasks->getNextPendingTask('CacheMonster_DeleteStaleTemplateCaches');
 
 			if ($task && is_array($task->settings))
 			{
@@ -473,7 +473,7 @@ class CacheMonster_InternalService extends BaseApplicationComponent
 			}
 			else
 			{
-				craft()->tasks->createTask('CacheMonster_PurgeInternalCaches', null, array(
+				craft()->tasks->createTask('CacheMonster_DeleteStaleTemplateCaches', null, array(
 					'elementId' => $elementId
 				));
 			}

@@ -43,7 +43,7 @@ class CacheMonster_Node extends \Twig_Node
 
 		$compiler
 			->addDebugInfo($this)
-			->write("\$cacheMonsterService = \Craft\craft()->cacheMonster_internal;\n")
+			->write("\$cacheMonsterService = \Craft\craft()->cacheMonster_templateCache;\n")
 			->write("\$ignoreCacheMonster{$n} = (\Craft\craft()->request->isLivePreview() || \Craft\craft()->request->getToken()");
 
 		if ($conditions)

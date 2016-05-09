@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * CacheMonster Purge internal caches
+ * CacheMonster delete stale template caches
  *
  * Forked from `DeleteStaleTemplateCachesTask` at 2.6.2784
  *
@@ -11,7 +11,7 @@ namespace Craft;
  * @copyright Copyright (c) 2016, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
-class CacheMonster_PurgeInternalCachesTask extends BaseTask
+class CacheMonster_DeleteStaleTemplateCachesTask extends BaseTask
 {
 	// Properties
 	// =========================================================================
@@ -61,7 +61,7 @@ class CacheMonster_PurgeInternalCachesTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		return Craft::t('Purging internal CacheMonster caches');
+		return Craft::t('Deleting stale template caches from CacheMonster');
 	}
 
 	/**

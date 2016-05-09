@@ -256,7 +256,7 @@ class CacheMonsterPlugin extends BasePlugin
 	 */
 	private function _createTemplateCacheTables()
 	{
-		Craft::log('Creating the cachemonster_templatecaches table.');
+		CacheMonsterPlugin::log('Creating the cachemonster_templatecaches table.');
 
 		craft()->db->createCommand()->createTable('cachemonster_templatecaches', array(
 			'cacheKey'   => array('column' => ColumnType::Varchar, 'null' => false),
@@ -269,8 +269,8 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->db->createCommand()->createIndex('cachemonster_templatecaches', 'expiryDate,cacheKey,locale,path');
 		craft()->db->createCommand()->addForeignKey('cachemonster_templatecaches', 'locale', 'locales', 'locale', 'CASCADE', 'CASCADE');
 
-		Craft::log('Finished creating the cachemonster_templatecaches table.');
-		Craft::log('Creating the cachemonster_templatecacheelements table.');
+		CacheMonsterPlugin::log('Finished creating the cachemonster_templatecaches table.');
+		CacheMonsterPlugin::log('Creating the cachemonster_templatecacheelements table.');
 
 		craft()->db->createCommand()->createTable('cachemonster_templatecacheelements', array(
 			'cacheId'   => array('column' => ColumnType::Int, 'null' => false),
@@ -280,8 +280,8 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->db->createCommand()->addForeignKey('cachemonster_templatecacheelements', 'cacheId', 'cachemonster_templatecaches', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->addForeignKey('cachemonster_templatecacheelements', 'elementId', 'elements', 'id', 'CASCADE', null);
 
-		Craft::log('Finished creating the cachemonster_templatecacheelements table.');
-		Craft::log('Creating the cachemonster_templatecachecriteria table.');
+		CacheMonsterPlugin::log('Finished creating the cachemonster_templatecacheelements table.');
+		CacheMonsterPlugin::log('Creating the cachemonster_templatecachecriteria table.');
 
 		craft()->db->createCommand()->createTable('cachemonster_templatecachecriteria', array(
 			'cacheId'  => array('column' => ColumnType::Int, 'null' => false),
@@ -292,6 +292,6 @@ class CacheMonsterPlugin extends BasePlugin
 		craft()->db->createCommand()->addForeignKey('cachemonster_templatecachecriteria', 'cacheId', 'cachemonster_templatecaches', 'id', 'CASCADE', null);
 		craft()->db->createCommand()->createIndex('cachemonster_templatecachecriteria', 'type');
 
-		Craft::log('Finished creating the cachemonster_templatecachecriteria table.');
+		CacheMonsterPlugin::log('Finished creating the cachemonster_templatecachecriteria table.');
 	}
 }

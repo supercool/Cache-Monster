@@ -345,6 +345,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			$params = array(':id' => $cacheId);
 		}
 
+		// TODO: grab paths about to be deleted and send through external purging task
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
 	}
@@ -373,6 +374,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		if ($cacheIds)
 		{
+			// TODO: grab paths about to be deleted and send through external purging task
 			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
 		}
 
@@ -551,6 +553,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			$params = array(':cacheKey' => $key);
 		}
 
+		// TODO: grab paths about to be deleted and send through external purging task
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
 		return (bool) $affectedRows;
 	}
@@ -567,6 +570,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
+		// TODO: grab paths about to be deleted and send through external purging task
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
 			'expiryDate <= :now',
 			array('now' => DateTimeHelper::currentTimeForDb())
@@ -620,6 +624,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$this->_deletedAllCaches = true;
 
+		// TODO: grab paths about to be deleted and send through external purging task
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}

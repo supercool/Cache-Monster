@@ -43,6 +43,9 @@ class CacheMonsterPlugin extends BasePlugin
 	public function init()
 	{
 
+		// Import Import Element Type Interface
+		Craft::import('plugins.cacheMonster.services.ICacheMonster_External');
+
 		/**
 		 * Here we are making sure to add the element ids and element criteria to
 		 * our db tables in between the start and end of our cache tags.

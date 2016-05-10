@@ -7,7 +7,7 @@ Caching on steroids for Craft CMS.
 
 1. [x] Fork the existing {% cache %} tag.
 
-2. [ ] Build an interface for integrating with external caching solutions such as Varnish, CloudFlare, AWS ElastiCache, Fastly etc. Start with just Varnish. (Left to do: implement interface in external service, abstract service from task, work out the best config/settings setup for the url to purge and the external service to use)
+2. [ ] Build an interface for integrating with external caching solutions such as Varnish, CloudFlare, AWS ElastiCache, Fastly etc. Start with just Varnish. (Left to do: abstract service from task)
 
 3. [ ] Add the cp settings page tool for purging our db caches, and separately the external ones
 

@@ -49,6 +49,9 @@ class CacheMonster_ExternalVarnishService extends BaseApplicationComponent imple
 			// Make the base url
 			$url = $settings['url'].$newPath;
 
+			// XXX: DEBUG
+			CacheMonsterPlugin::log('Purging url: '.$url, LogLevel::Info);
+
 			// Create the PURGE request
 			$request = $client->createRequest('PURGE', $url);
 

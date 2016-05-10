@@ -43,8 +43,11 @@ class CacheMonsterPlugin extends BasePlugin
 	public function init()
 	{
 
-		// Import Import Element Type Interface
+		// Import our non-autoloaded classes
+		Craft::import('plugins.cacheMonster.etc.CacheMonster_BaseTemplate');
 		Craft::import('plugins.cacheMonster.services.ICacheMonster_External');
+
+		// TODO: move all the event listeners somewhere else - cluttering up the place
 
 		/**
 		 * Here we are making sure to add the element ids and element criteria to
@@ -64,6 +67,7 @@ class CacheMonsterPlugin extends BasePlugin
 		});
 
 		// Raised when any element model is populated from its database result.
+		// FIXME: This doesn’t catch any variables already sent to the template on render ...
 		craft()->on('elements.onPopulateElement', function(Event $event)
 		{
 			$element = $event->params['element'];
@@ -77,6 +81,21 @@ class CacheMonsterPlugin extends BasePlugin
 				}
 			}
 		});
+
+		// Can’t use this because it doesn’t get fired during the template parsing process
+		//
+		// craft()->on('elements.onPopulateElements', function(Event $event)
+		// {
+		// 	$elements = $event->params['elements'];
+		//
+		// 	foreach ($elements as $element) {
+		// 		$elementId = $element->id;
+		// 		if ($elementId)
+		// 		{
+		// 			craft()->cacheMonster_templateCache->includeElementInTemplateCaches($elementId);
+		// 		}
+		// 	}
+		// });
 
 
 		/**

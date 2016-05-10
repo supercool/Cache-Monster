@@ -189,6 +189,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	public function includeElementInTemplateCaches($elementId)
 	{
+
 		// Make sure template caching is enabled.
 		if (!$this->_isTemplateCachingEnabled())
 		{

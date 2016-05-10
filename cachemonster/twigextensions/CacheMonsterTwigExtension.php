@@ -18,6 +18,12 @@ class CacheMonsterTwigExtension extends \Twig_Extension
 	// Public Methods
 	// =========================================================================
 
+
+	public function initRuntime(\Twig_Environment $environment)
+	{
+		$environment->setBaseTemplateClass('Craft\CacheMonster_BaseTemplate');
+	}
+
 	/**
 	 * Returns the name of the extension.
 	 *

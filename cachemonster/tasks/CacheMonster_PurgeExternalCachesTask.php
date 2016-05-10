@@ -35,8 +35,7 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		// TODO: work out the service from the plugin settings
-		$this->_service = 'Varnish';
+		// $this->_service = craft()->config->get('externalCachingService', 'cacheMonster');
 		return Craft::t('Purging external {service} caches', array('service' => $this->_service));
 	}
 
@@ -48,8 +47,11 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	public function getTotalSteps()
 	{
 
-		// TODO: work out the service from the plugin settings
-		$this->_service = 'Varnish';
+		$this->_service = craft()->config->get('externalCachingService', 'cacheMonster');
+
+		if (!$this->_service) {
+			return 0;
+		}
 
 		// Get the actual paths out of the settings
 		$this->_paths = $this->getSettings()->paths;
@@ -71,6 +73,11 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
+
+		if (!$this->_service) {
+			return true;
+		}
+
 		$service = 'cacheMonster_external'.$this->_service;
 		return craft()->$service->purgePaths($this->_paths[$step]);
 	}

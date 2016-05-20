@@ -728,6 +728,18 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 
 	/**
+	 * @return bool
+	 */
+	private function _isExternalCachingEnabled()
+	{
+		if (craft()->config->get('externalCachingService'))
+		{
+			return true;
+		}
+	}
+
+
+	/**
 	 * Purges a cache for an external service by its ID(s).
 	 *
 	 * @param int|array $cacheId The cache ID.
@@ -736,6 +748,12 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	private function _purgeExternalCachesByCacheId($cacheId)
 	{
+
+		// Make sure external caching is enabled.
+		if (!$this->_isExternalCachingEnabled())
+		{
+			return;
+		}
 
 		// Make $cacheId an array if not
 		if (!is_array($cacheId))

@@ -36,8 +36,6 @@ abstract class CacheMonster_BaseTemplate extends BaseTemplate
 
 		if (is_object($object) && $object instanceof BaseElementModel)
 		{
-			// XXX DEBUG
-			// Craft::dd($object);
 			$this->_includeElementInTemplateCaches($object);
 		}
 

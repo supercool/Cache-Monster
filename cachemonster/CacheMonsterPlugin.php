@@ -66,36 +66,23 @@ class CacheMonsterPlugin extends BasePlugin
 			craft()->cacheMonster_templateCache->includeCriteriaInTemplateCaches($criteria);
 		});
 
-		// Raised when any element model is populated from its database result.
+		// Raised from `BaseTemplate::getAttribute()`
 		// FIXME: This doesn’t catch any variables already sent to the template on render ...
-		craft()->on('elements.onPopulateElement', function(Event $event)
+		craft()->on('templates.onGetAttribute', function(Event $event)
 		{
-			$element = $event->params['element'];
 
-			if (is_object($element) && $element instanceof BaseElementModel)
+			$object = $event->params['object'];
+
+			if (is_object($object) && $object instanceof BaseElementModel)
 			{
-				$elementId = $element->id;
+				$elementId = $object->id;
 				if ($elementId)
 				{
 					craft()->cacheMonster_templateCache->includeElementInTemplateCaches($elementId);
 				}
 			}
-		});
 
-		// Can’t use this because it doesn’t get fired during the template parsing process
-		//
-		// craft()->on('elements.onPopulateElements', function(Event $event)
-		// {
-		// 	$elements = $event->params['elements'];
-		//
-		// 	foreach ($elements as $element) {
-		// 		$elementId = $element->id;
-		// 		if ($elementId)
-		// 		{
-		// 			craft()->cacheMonster_templateCache->includeElementInTemplateCaches($elementId);
-		// 		}
-		// 	}
-		// });
+		});
 
 
 		/**

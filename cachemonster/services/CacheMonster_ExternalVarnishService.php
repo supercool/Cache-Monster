@@ -58,7 +58,7 @@ class CacheMonster_ExternalVarnishService extends BaseApplicationComponent imple
 			// Add it to the batch
 			$batch->add($request);
 
-			// TODO: add a request for each ip specififed in the config here
+			// TODO: add a request for each ip specified in the config here
 		}
 
 		// Flush the queue and retrieve the flushed items

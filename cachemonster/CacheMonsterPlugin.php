@@ -67,7 +67,7 @@ class CacheMonsterPlugin extends BasePlugin
 		});
 
 		// Raised from `BaseTemplate::getAttribute()`
-		// FIXME: This doesn’t catch any variables already sent to the template on render ...
+		// TODO: requires core modification
 		craft()->on('templates.onGetAttribute', function(Event $event)
 		{
 

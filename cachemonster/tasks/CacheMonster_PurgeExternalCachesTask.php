@@ -35,7 +35,7 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 	 */
 	public function getDescription()
 	{
-		// $this->_service = craft()->config->get('externalCachingService', 'cacheMonster');
+		$this->_service = craft()->config->get('externalCachingService', 'cacheMonster');
 		return Craft::t('Purging external {service} caches', array('service' => $this->_service));
 	}
 

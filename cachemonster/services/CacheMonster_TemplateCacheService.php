@@ -732,7 +732,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	private function _isExternalCachingEnabled()
 	{
-		if (craft()->config->get('externalCachingService'))
+		if (craft()->config->get('externalCachingService', 'cacheMonster'))
 		{
 			return true;
 		}

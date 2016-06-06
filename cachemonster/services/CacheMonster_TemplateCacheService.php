@@ -146,7 +146,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			return;
 		}
 
-		if (craft()->config->get('cacheElementQueries'))
+		if (craft()->config->get('cacheElementQueries', 'cacheMonster'))
 		{
 			$this->_cacheCriteria[$key] = array();
 		}
@@ -451,7 +451,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			return false;
 		}
 
-		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries'))
+		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries', 'cacheMonster'))
 		{
 			// If there are any pending CacheMonster_DeleteStaleTemplateCachesTask tasks, just append this element to it
 			$task = craft()->tasks->getNextPendingTask('CacheMonster_DeleteStaleTemplateCaches');
@@ -720,7 +720,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	private function _isTemplateCachingEnabled()
 	{
-		if (craft()->config->get('enableTemplateCaching'))
+		if (craft()->config->get('enableTemplateCaching', 'cacheMonster'))
 		{
 			return true;
 		}

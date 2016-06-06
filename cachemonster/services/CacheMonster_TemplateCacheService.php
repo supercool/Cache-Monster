@@ -744,6 +744,23 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	}
 
 
+	/**
+	 * Strips query params from paths
+	 *
+	 * @param  array $paths
+	 * @return array
+	 */
+	public function stripQueryStringsFromPaths($paths)
+	{
+
+		foreach ($paths as $key => $path) {
+			$paths[$key] = UrlHelper::stripQueryString($path);
+		}
+
+		return array_unique($paths);
+
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -772,8 +789,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 				$this->_path .= '/'.craft()->config->get('pageTrigger').$pageNum;
 			}
 
-			// Get the querystring without the path param.
-			if ($queryString = craft()->request->getQueryStringWithoutPath())
+			// Try and add the the query string, if we even should
+			if (craft()->config->get('includeQueryString', 'cacheMonster') && $queryString = craft()->request->getQueryStringWithoutPath())
 			{
 				$queryString = trim($queryString, '&');
 
@@ -917,6 +934,12 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		// Get the paths
 		$paths = $this->getPathsByIds($cacheId);
+
+		// Drop any paths with query strings if we need to
+		if (craft()->config->get('includeQueryString', 'cacheMonster') && craft()->config->get('excludeQueryStringsWhenWarming', 'cacheMonster'))
+		{
+			$paths = $this->stripQueryStringsFromPaths($paths);
+		}
 
 		if ($paths) {
 

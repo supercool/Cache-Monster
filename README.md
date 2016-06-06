@@ -3,6 +3,28 @@
 Caching on steroids for Craft CMS.
 
 
+## Core modification
+
+Currently for this plugin to work a couple of core modifications are needed.
+
+Add the following to `craft/app/etc/templating/BaseTemplate.php` in the `getAttribute()` method before it returns:
+
+```
+craft()->templates->onGetAttribute(array(
+	'object' => $object,
+));
+```
+
+Then, anywhere in `craft/app/services/TemplatesService.php` class add:
+
+```
+public function onGetAttribute($params = array())
+{
+	$this->raiseEvent('onGetAttribute', new Event($this, $params));
+}
+```
+
+
 ## New roadmap
 
 1. [x] Fork the existing {% cache %} tag.

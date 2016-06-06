@@ -326,19 +326,19 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	// =========================================================================
 
 	/**
-	 * [getAllTemplateCaches description]
-	 * @return [type] [description]
+	 *
 	 */
 	public function getAllTemplateCaches()
 	{
 		$query = craft()->db->createCommand()
-			->select('id, cacheKey, locale, path, expiryDate')
+			->select('*')
+			->limit('50')
 			->from('cachemonster_templatecaches');
 
-		return $query->queryAll();
+		$rows = $query->queryAll();
+
+		return CacheMonster_TemplateCacheModel::populateModels($rows);
 	}
-
-
 
 
 	// Deletion Methods

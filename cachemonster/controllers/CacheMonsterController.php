@@ -24,6 +24,17 @@ class CacheMonsterController extends BaseController
 	}
 
 	/**
+	 * Deletes all the template caches
+	 */
+	public function actionDeleteAllCaches()
+	{
+		$this->requirePostRequest();
+		craft()->cacheMonster_templateCache->deleteAllCaches();
+		craft()->userSession->setNotice(Craft::t('Caches deleted.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
 	 * Deletes a specific template cache
 	 */
 	public function actionDeleteCache()

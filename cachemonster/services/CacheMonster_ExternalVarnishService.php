@@ -9,6 +9,7 @@ namespace Craft;
  * @copyright Copyright (c) 2016, Supercool Ltd
  * @link      http://plugins.supercooldesign.co.uk
  */
+
 class CacheMonster_ExternalVarnishService extends BaseApplicationComponent implements ICacheMonster_External
 {
 

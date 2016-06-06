@@ -25,13 +25,13 @@ public function onGetAttribute($params = array())
 ```
 
 
-## New roadmap
+## V2 roadmap
 
 1. [x] Fork the existing {% cache %} tag.
 
 2. [x] Build an interface for integrating with external caching solutions such as Varnish, CloudFlare, AWS ElastiCache, Fastly etc. Start with just Varnish.
 
-3. [ ] Provide controller action for emptying the db caches, and also the external ones.
+3. [x] Provide controller action for emptying the db caches. Purging externals will happen if configured to.
 
 4. [x] Provide a basic view in the cp for manually deleting caches
 

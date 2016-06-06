@@ -13,6 +13,8 @@ namespace Craft;
 class CacheMonsterController extends BaseController
 {
 
+	protected $allowAnonymous = array('actionClearCache');
+
 	/**
 	 * Index
 	 */
@@ -46,6 +48,42 @@ class CacheMonsterController extends BaseController
 
 		craft()->cacheMonster_templateCache->deleteCacheById($cacheId);
 		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Clear the cache
+	 */
+	public function actionClearCache()
+	{
+
+		// TODO: Should probably provide some kind of security layer here like a
+		//       key/string proveded as a required plugin setting.
+
+		// Delete all the template caches!
+		craft()->cacheMonster_templateCache->deleteAllCaches();
+
+		// Run any pending tasks
+		if (!craft()->tasks->isTaskRunning())
+		{
+			// Is there a pending task?
+			$task = craft()->tasks->getNextPendingTask();
+
+			if ($task)
+			{
+				// Attempt to close the connection if this is an Ajax request
+				if (craft()->request->isAjaxRequest())
+				{
+					craft()->request->close();
+				}
+
+				// Start running tasks
+				craft()->tasks->runPendingTasks();
+			}
+		}
+
+		// Exit
+		craft()->end();
+
 	}
 
 }

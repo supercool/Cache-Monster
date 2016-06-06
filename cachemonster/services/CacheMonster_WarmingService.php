@@ -2,7 +2,7 @@
 namespace Craft;
 
 /**
- * Class CacheMonster_ExternalVarnishService
+ * Class CacheMonster_WarmingService
  *
  * @package   CacheMonster
  * @author    Josh Angell
@@ -10,22 +10,20 @@ namespace Craft;
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class CacheMonster_ExternalVarnishService extends BaseApplicationComponent implements ICacheMonster_External
+class CacheMonster_WarmingService extends BaseApplicationComponent
 {
 
 	/**
-	 * Purges the given paths
+	 * Wamrs the given paths
 	 *
-	 * @param array $paths An array of paths to purge
+	 * @param array $paths An array of paths to warm
 	 *
 	 * @return bool
 	 */
-	public function purgePaths($paths)
+	public function warmPaths($paths)
 	{
 
 		// Set up the batch
-		// TODO: when supporting multiple ip addresses, multiply the path count by
-		//       the number of ips listed
 		$batch = \Guzzle\Batch\BatchBuilder::factory()
 						->transferRequests(count($paths))
 						->bufferExceptions()
@@ -37,27 +35,21 @@ class CacheMonster_ExternalVarnishService extends BaseApplicationComponent imple
 		// Set the Accept header
 		$client->setDefaultOption('headers/Accept', '*/*');
 
-		// Get the settings out of our config
-		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
-
-		// Loop the paths in this step
+		// Loop the paths
 		foreach ($paths as $path)
 		{
 			// Strip the prefixes from the path
-			// TODO: this could be in a base class
 			$path = preg_replace('/site:/', '', $path, 1);
 			$path = preg_replace('/cp:/', '', $path, 1);
 
 			// Make the base url
-			$url = $settings['url'].$path;
+			$url = UrlHelper::getSiteUrl($path);
 
-			// Create the PURGE request
-			$request = $client->createRequest('PURGE', $url);
+			// Create the GET request
+			$request = $client->createRequest('GET', $url);
 
 			// Add it to the batch
 			$batch->add($request);
-
-			// TODO: add a request for each ip specified in the config here
 		}
 
 		// Flush the queue and retrieve the flushed items

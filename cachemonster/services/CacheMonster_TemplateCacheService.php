@@ -369,8 +369,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			$params = array(':id' => $cacheId);
 		}
 
-		// Pass the ids off to be purged externally
-		$this->_purgeExternalCachesByCacheId($cacheId);
+		// Allow stuff to happen with those caches before they get deleted
+		$this->onBeforeDeleteTemplateCaches($cacheId);
 
 		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
@@ -401,8 +401,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		if ($cacheIds)
 		{
-			// Pass the ids off to be purged externally
-			$this->_purgeExternalCachesByCacheId($cacheIds);
+			// Allow stuff to happen with those caches before they get deleted
+			$this->onBeforeDeleteTemplateCaches($cacheIds);
 
 			// Delete them
 			craft()->db->createCommand()->delete(static::$_templateCachesTable, array('in', 'id', $cacheIds));
@@ -595,8 +595,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$cacheIds = $query->queryColumn();
 
-		// Pass the ids off to be purged externally
-		$this->_purgeExternalCachesByCacheId($cacheIds);
+		// Allow stuff to happen with those caches before they get deleted
+		$this->onBeforeDeleteTemplateCaches($cacheIds);
 
 		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable, $condition, $params);
@@ -623,8 +623,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$cacheIds = $query->queryColumn();
 
-		// Pass the ids off to be purged externally
-		$this->_purgeExternalCachesByCacheId($cacheIds);
+		// Allow stuff to happen with those caches before they get deleted
+		$this->onBeforeDeleteTemplateCaches($cacheIds);
 
 		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable,
@@ -687,13 +687,62 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$cacheIds = $query->queryColumn();
 
-		// Pass the ids off to be purged externally
-		$this->_purgeExternalCachesByCacheId($cacheIds);
+		// Allow stuff to happen with those caches before they get deleted
+		$this->onBeforeDeleteTemplateCaches($cacheIds);
 
 		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
 	}
+
+
+	/**
+	 * Triggers the purging and warming code before the tempalte caches get
+	 * removed from the db
+	 *
+	 * @param int|array $cacheId The cache ID(s).
+	 */
+	public function onBeforeDeleteTemplateCaches($cacheIds)
+	{
+		// Pass the ids off to be purged externally
+		$this->_purgeExternalCachesByCacheId($cacheIds);
+
+		// Warm them too
+		$this->_warmCachesByCacheId($cacheIds);
+	}
+
+
+	/**
+	 * Returns the paths for a set of cache ids
+	 *
+	 * @param int|array $cacheId The cache ID.
+	 *
+	 * @return array
+	 */
+	public function getPathsByIds($cacheIds)
+	{
+
+		// TODO: could do a little internal caching here by saving the
+		//       result to a variable keyed by a hash of the `$cacheIds`
+
+		// Make $cacheIds an array if not
+		if (!is_array($cacheIds))
+		{
+			$cacheIds = array($cacheIds);
+		}
+
+		// Get the paths that those caches related to
+		$query = craft()->db->createCommand()
+			->selectDistinct('path')
+			->from('cachemonster_templatecaches')
+			->where(array('in', 'id', $cacheIds));
+
+		$paths = $query->queryColumn();
+
+		return $paths;
+
+	}
+
 
 	// Private Methods
 	// =========================================================================
@@ -763,6 +812,18 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 
 	/**
+	 * @return bool
+	 */
+	private function _isCacheWarmingEnabled()
+	{
+		if (craft()->config->get('enableCacheWarming', 'cacheMonster'))
+		{
+			return true;
+		}
+	}
+
+
+	/**
 	 * Purges a cache for an external service by its ID(s).
 	 *
 	 * @param int|array $cacheId The cache ID.
@@ -784,13 +845,8 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			$cacheId = array($cacheId);
 		}
 
-		// Get the paths that those caches related to
-		$query = craft()->db->createCommand()
-			->selectDistinct('path')
-			->from('cachemonster_templatecaches')
-			->where(array('in', 'id', $cacheId));
-
-		$paths = $query->queryColumn();
+		// Get the paths
+		$paths = $this->getPathsByIds($cacheId);
 
 		if ($paths) {
 
@@ -825,6 +881,76 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			else
 			{
 				craft()->tasks->createTask('CacheMonster_PurgeExternalCaches', null, array(
+					'paths' => !is_array($paths) ? array($paths) : $paths
+				));
+			}
+
+			return $paths;
+		} else {
+			return false;
+		}
+
+	}
+
+
+	/**
+	 * Warms a cache
+	 *
+	 * @param int|array $cacheId The cache ID.
+	 *
+	 * @return array|bool
+	 */
+	private function _warmCachesByCacheId($cacheId)
+	{
+
+		// Make sure external caching is enabled.
+		if (!$this->_isCacheWarmingEnabled())
+		{
+			return;
+		}
+
+		// Make $cacheId an array if not
+		if (!is_array($cacheId))
+		{
+			$cacheId = array($cacheId);
+		}
+
+		// Get the paths
+		$paths = $this->getPathsByIds($cacheId);
+
+		if ($paths) {
+
+			// If there are any pending CacheMonster_WarmCaches tasks, just append this element to it
+			$task = craft()->tasks->getNextPendingTask('CacheMonster_WarmCaches');
+
+			if ($task && is_array($task->settings))
+			{
+				$settings = $task->settings;
+
+				if (!is_array($settings['paths']))
+				{
+					$settings['paths'] = array($settings['paths']);
+				}
+
+				if (is_array($paths))
+				{
+					$settings['paths'] = array_merge($settings['paths'], $paths);
+				}
+				else
+				{
+					$settings['paths'][] = $paths;
+				}
+
+				// Make sure there aren't any duplicate paths
+				$settings['paths'] = array_unique($settings['paths']);
+
+				// Set the new settings and save the task
+				$task->settings = $settings;
+				craft()->tasks->saveTask($task, false);
+			}
+			else
+			{
+				craft()->tasks->createTask('CacheMonster_WarmCaches', null, array(
 					'paths' => !is_array($paths) ? array($paths) : $paths
 				));
 			}

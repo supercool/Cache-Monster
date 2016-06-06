@@ -37,7 +37,7 @@ public function onGetAttribute($params = array())
 
 5. [ ] Expand the view in the cp by providing a button for each option (delete from db, purge external, warm, all at once) - probably provide checklist of options and possibly warn user if just purging they will lose the stack of urls for warming.
 
-6. [ ] Cache warming - keep all the drivers warm! When something has been purged for whatever reason, re-make it in the internal and (optionally) external caches. Probably work out a way of only warming things that don’t have query strings - this could just be an assumption or a configurable thing.
+6. [x] Cache warming - keep all the drivers warm! When something has been purged for whatever reason, re-make it in the internal and (optionally) external caches. Probably work out a way of only warming things that don’t have query strings - this could just be an assumption or a configurable thing.
 
 7. [ ] Look at improving the garbage collection (expired rows on the db table don’t get removed until the cleanup task runs).
 

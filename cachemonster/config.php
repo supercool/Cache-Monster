@@ -13,6 +13,6 @@ return array(
 	),
 
 	// Warming settings
-
+	'enableCacheWarming' => true,
 
 );

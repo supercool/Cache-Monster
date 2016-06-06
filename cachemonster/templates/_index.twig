@@ -8,6 +8,17 @@
 </div>
 
 {% if caches|length %}
+
+<form class="right" method="post">
+	{{ getCsrfInput() }}
+	<input type="hidden" name="action" value="cacheMonster/deleteAllCaches">
+	<input type="submit" name="submit" value="Clear All" class="btn submit">
+</form>
+
+<div class="clear"></div>
+
+<hr>
+
 <table id="caches" class="data fullwidth collapsible">
 	<thead>
 		<th scope="col">{{ "Path"|t }}</th>
@@ -16,9 +27,9 @@
 	</thead>
 	<tbody>
 		{% for cache in caches %}
-		<tr data-id="{{ cache.id }}" data-name="{{ cache.path|replace('site:','') }}">
-			<th scope="row" data-title="{{ 'Path'|t }}"><a href="/{{ cache.path|replace('site:','') }}">/{{ cache.path|replace('site:','') }}</a></th>
-			<td data-title="{{ 'Expiry Date'|t }}">{{ cache.expiryDate|date('d-m-Y H:i') }}</td>
+		<tr data-id="{{ cache.id }}" data-name="{{ cache.getPath() }}">
+			<th scope="row" data-title="{{ 'Path'|t }}"><a href="{{ cache.getPath() }}" target="_blank">{{ cache.getPath() }}</a></th>
+			<td data-title="{{ 'Expiry Date'|t }}">{{ cache.expiryDate.uiTimestamp }}</td>
 			<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 		</tr>
 		{% endfor %}

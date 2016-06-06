@@ -31,11 +31,11 @@ public function onGetAttribute($params = array())
 
 2. [x] Build an interface for integrating with external caching solutions such as Varnish, CloudFlare, AWS ElastiCache, Fastly etc. Start with just Varnish.
 
-3. [ ] Add the cp settings page tool for purging our db caches, and separately the external ones.
+3. [ ] Provide controller action for emptying the db caches, and also the external ones.
 
-4. [ ] Provide controller action for emptying the db caches, and also the external ones.
+4. [x] Provide a basic view in the cp for manually deleting caches
 
-5. [ ] Provide a view in the cp for manually purging or warming caches - make sure to combine the two and warn user if just purging they will lose the stack of urls for warming.
+5. [ ] Expand the view in the cp by providing a button for each option (delete from db, purge external, warm, all at once) - probably provide checklist of options and possibly warn user if just purging they will lose the stack of urls for warming.
 
 6. [ ] Cache warming - keep all the drivers warm! When something has been purged for whatever reason, re-make it in the internal and (optionally) external caches. Probably work out a way of only warming things that don’t have query strings - this could just be an assumption or a configurable thing.
 

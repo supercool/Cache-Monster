@@ -40,6 +40,11 @@ class CacheMonsterPlugin extends BasePlugin
 		return 'http://plugins.supercooldesign.co.uk';
 	}
 
+	public function hasCpSection()
+	{
+		return true;
+	}
+
 	public function init()
 	{
 
@@ -240,6 +245,16 @@ class CacheMonsterPlugin extends BasePlugin
 		return craft()->templates->render('cacheMonster/settings', array(
 			'settings' => $this->getSettings()
 		));
+	}
+
+	/**
+	 * Routes
+	 */
+	public function registerCpRoutes()
+	{
+		return array(
+			'cachemonster' => array('action' => 'cacheMonster/index'),
+		);
 	}
 
 	// Protected Methods

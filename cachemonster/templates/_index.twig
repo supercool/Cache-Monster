@@ -1,0 +1,39 @@
+{% extends "_layouts/cp" %}
+
+{% set title = "CacheMonster"|t %}
+
+{% set content %}
+<div id="no-caches"{% if caches %} class="hidden"{% endif %}>
+	<p>{{ "There aren’t any template caches yet!"|t }}</p>
+</div>
+
+{% if caches|length %}
+<table id="caches" class="data fullwidth collapsible">
+	<thead>
+		<th scope="col">{{ "Path"|t }}</th>
+		<th scope="col">{{ "Expiry Date"|t }}</th>
+		<td class="thin"></td>
+	</thead>
+	<tbody>
+		{% for cache in caches %}
+		<tr data-id="{{ cache.id }}" data-name="{{ cache.path|replace('site:','') }}">
+			<th scope="row" data-title="{{ 'Path'|t }}"><a href="/{{ cache.path|replace('site:','') }}">/{{ cache.path|replace('site:','') }}</a></th>
+			<td data-title="{{ 'Expiry Date'|t }}">{{ cache.expiryDate|date('d-m-Y H:i') }}</td>
+			<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+{% endset %}
+
+{% set js %}
+var adminTable = new Craft.AdminTable({
+	tableSelector: '#caches',
+	noObjectsSelector: '#no-caches',
+	deleteAction: 'cacheMonster/deleteCache',
+	confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}”?"|t }}'
+});
+{% endset %}
+{% includeJs js %}

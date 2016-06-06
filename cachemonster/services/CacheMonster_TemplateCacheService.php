@@ -321,6 +321,29 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 		}
 	}
 
+
+	// View Methods
+	// =========================================================================
+
+	/**
+	 * [getAllTemplateCaches description]
+	 * @return [type] [description]
+	 */
+	public function getAllTemplateCaches()
+	{
+		$query = craft()->db->createCommand()
+			->select('id, cacheKey, locale, path, expiryDate')
+			->from('cachemonster_templatecaches');
+
+		return $query->queryAll();
+	}
+
+
+
+
+	// Deletion Methods
+	// =========================================================================
+
 	/**
 	 * Deletes a cache by its ID(s).
 	 *

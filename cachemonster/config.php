@@ -15,8 +15,8 @@ return array(
 	'externalCachingServiceSettings' => array(
 		'url' => CRAFT_SITE_URL,
 		// the following external settings are specific to at least CloudFlare
-		'authEmail' => null
-		'authKey' => null
+		'authEmail' => null,
+		'authKey' => null,
 		'zoneId' => null
 	),
 

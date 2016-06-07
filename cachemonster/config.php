@@ -9,10 +9,15 @@ return array(
 	// Template caches options
 	'includeQueryString' => true, // Set to false to stop including the query string in the stored path
 
-	// External service settings - so far only Varnish supported so this is pretty specific to that
-	'externalCachingService' => false, // Can be 'Varnish' or false
+	// External service settings - so far only Varnish and CloudFlare supported
+	'externalCachingService' => false, // Varnish, CloudFlare, or false
+
 	'externalCachingServiceSettings' => array(
-		'url' => CRAFT_SITE_URL
+		'url' => CRAFT_SITE_URL,
+		// the following external settings are specific to at least CloudFlare
+		'authEmail' => null
+		'authKey' => null
+		'zoneId' => null
 	),
 
 	// Warming settings

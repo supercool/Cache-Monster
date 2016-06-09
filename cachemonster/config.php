@@ -11,13 +11,20 @@ return array(
 
 	// External service settings - so far only Varnish and CloudFlare supported
 	'externalCachingService' => false, // Varnish, CloudFlare, or false
-
 	'externalCachingServiceSettings' => array(
-		'url' => CRAFT_SITE_URL,
-		// the following external settings are specific to at least CloudFlare
-		'authEmail' => null,
-		'authKey' => null,
-		'zoneId' => null
+
+		// Varnish
+		'varnish' => array(
+			'url' => CRAFT_SITE_URL,
+		),
+
+		// CloudFlare
+		'cloudflare' => array(
+			'authEmail' => null,
+			'authKey' => null,
+			'zoneId' => null
+		),
+
 	),
 
 	// Warming settings

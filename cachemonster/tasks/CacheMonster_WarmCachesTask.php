@@ -43,9 +43,6 @@ class CacheMonster_WarmCachesTask extends BaseTask
 		// Get the actual paths out of the settings
 		$this->_paths = $this->getSettings()->paths;
 
-		// Do this in batches
-		$this->_paths = array_chunk($this->_paths, 20);
-
 		return count($this->_paths);
 	}
 

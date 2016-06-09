@@ -23,46 +23,32 @@ class CacheMonster_WarmingService extends BaseApplicationComponent
 	public function warmPaths($paths)
 	{
 
-		// Set up the batch
-		$batch = \Guzzle\Batch\BatchBuilder::factory()
-						->transferRequests(count($paths))
-						->bufferExceptions()
-						->build();
-
 		// Make the client
 		$client = new \Guzzle\Http\Client();
 
 		// Set the Accept header
 		$client->setDefaultOption('headers/Accept', '*/*');
 
-		// Loop the paths
-		foreach ($paths as $path)
+		// Strip the prefixes from the path
+		$path = preg_replace('/site:/', '', $path, 1);
+		$path = preg_replace('/cp:/', '', $path, 1);
+
+		// Make the base url
+		$cacheWarmingUrl = craft()->config->get('cacheWarmingUrl', 'cacheMonster');
+		$url = $cacheWarmingUrl.$path;
+
+		// Make a GET
+		$request = $client->get($url);
+
+		// Send it
+		try
 		{
-			// Strip the prefixes from the path
-			$path = preg_replace('/site:/', '', $path, 1);
-			$path = preg_replace('/cp:/', '', $path, 1);
-
-			// Make the base url
-			$url = UrlHelper::getSiteUrl($path);
-
-			// Create the GET request
-			$request = $client->createRequest('GET', $url);
-
-			// Add it to the batch
-			$batch->add($request);
+			$response = $request->send();
 		}
-
-		// Flush the queue and retrieve the flushed items
-		$requests = $batch->flush();
-
-		// Log any exceptions
-		foreach ($batch->getExceptions() as $e)
+		catch (\Exception $e)
 		{
 			CacheMonsterPlugin::log('An exception occurred: '.$e->getMessage(), LogLevel::Error);
 		}
-
-		// Clear any exceptions
-		$batch->clearExceptions();
 
 		// Just pretend it always worked
 		return true;

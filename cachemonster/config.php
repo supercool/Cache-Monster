@@ -29,6 +29,7 @@ return array(
 
 	// Warming settings
 	'enableCacheWarming' => true,
+	'cacheWarmingUrl' => CRAFT_SITE_URL,
 	'excludeQueryStringsWhenWarming' => true, // By default CacheMonster won’t warm urls with query strings
 
 );

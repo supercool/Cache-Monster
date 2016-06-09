@@ -10,15 +10,40 @@ namespace Craft;
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent implements ICacheMonster_External
+class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalService
 {
+
+	// Properties
+	// =========================================================================
+
 	/**
 	 * @var string
 	 */
 	private static $_cloudFlareApiBaseUrl = 'https://api.cloudflare.com/client/v4/zones/';
 
 	/**
-	 * Purges the given paths
+	 * @var array
+	 */
+	private $_settings;
+
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Initializes the application component.
+	 *
+	 * @return null
+	 */
+	public function init()
+	{
+		// Get the settings out of our config
+		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
+		$this->_settings = $settings['cloudflare'];
+	}
+
+	/**
+	 * @inheritDoc ICacheMonster_External::purgePaths()
 	 *
 	 * @param array $paths An array of paths to purge
 	 *
@@ -26,15 +51,13 @@ class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent im
 	 */
 	public function purgePaths($paths=array())
 	{
+		// Bail if the settings weren’t valid
 		if (!$this->_hasValidSettings())
 		{
 			throw new Exception(Craft::t('Could not validate the CloudFlare cache settings! Please ensure you have entered an "authEmail", "authKey" and "zoneId".'));
 		}
 
-		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
-
-		// Normalize the paths returned from Craft's cache table
-		// by removing "site:"" and appending the site url
+		// Normalize the paths
 		$preparedPaths = $this->_preparePaths($paths);
 
 		// Make the client
@@ -42,8 +65,8 @@ class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent im
 
 		// Set the relevant headers
 		$client->setDefaultOption('headers', array(
-			'X-Auth-Email' => $settings['authEmail'],
-			'X-Auth-Key'   => $settings['authKey'],
+			'X-Auth-Email' => $this->_settings['authEmail'],
+			'X-Auth-Key'   => $this->_settings['authKey'],
 			'Content-Type' => 'application/json'
 		));
 
@@ -51,7 +74,7 @@ class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent im
 		{
 			// Issue a DELETE request to the purge endpoint passing
 			// along the list of files to be purged
-			$url = $this->_purgeUrlForZone($settings['zoneId']);
+			$url = $this->_purgeUrlForZone($this->_settings['zoneId']);
 			$body = json_encode(array('files' => $preparedPaths));
 			$request = $client->delete($url);
 			$request->setBody($body);
@@ -67,25 +90,37 @@ class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent im
 		return true;
 	}
 
-	// Private
+
+	// Private Methods
+	// =========================================================================
 
 	/**
+	 * Returns the purge url for a particular zone
+	 *
 	 * @param string $zoneId
+	 * @return string
 	 */
 	private function _purgeUrlForZone($zoneId)
 	{
 		return static::$_cloudFlareApiBaseUrl . $zoneId . '/purge_cache';
 	}
 
+	/**
+	 * Checks if the provided settings are valid
+	 *
+	 * @return boolean
+	 */
 	private function _hasValidSettings()
 	{
-		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
-
-		return $settings['authEmail'] != "" && $settings['authKey'] != "" && $settings['zoneId'];
+		return $this->_settings['authEmail'] != "" && $this->_settings['authKey'] != "" && $this->_settings['zoneId'];
 	}
 
 	/**
+	 * Normalizes the paths returned from Craft's cache table
+	 * by removing any prefixs and appending the site url
+	 *
 	 * @param array $paths
+	 * @return array
 	 */
 	private function _preparePaths($paths=array())
 	{
@@ -93,8 +128,9 @@ class CacheMonster_ExternalCloudFlareService extends BaseApplicationComponent im
 
 		foreach ($paths as $path)
 		{
-			$newPath = preg_replace('/site:/', '', $path, 1);
-			$preparedPaths[] = UrlHelper::getSiteUrl($newPath);
+			// Strip the prefixes from the path
+			$path = $this->stripPrefixesFromPath($path);
+			$preparedPaths[] = UrlHelper::getSiteUrl($path);
 		}
 
 		return $preparedPaths;

@@ -10,11 +10,35 @@ namespace Craft;
  * @link      http://plugins.supercooldesign.co.uk
  */
 
-class CacheMonster_ExternalVarnishService extends BaseApplicationComponent implements ICacheMonster_External
+class CacheMonster_ExternalVarnishService extends BaseCacheMonster_ExternalService
 {
 
+	// Properties
+	// =========================================================================
+
 	/**
-	 * Purges the given paths
+	 * @var array
+	 */
+	private $_settings;
+
+
+	// Public Methods
+	// =========================================================================
+
+	/**
+	 * Initializes the application component.
+	 *
+	 * @return null
+	 */
+	public function init()
+	{
+		// Get the settings out of our config
+		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
+		$this->_settings = $settings['varnish'];
+	}
+
+	/**
+	 * @inheritDoc ICacheMonster_External::purgePaths()
 	 *
 	 * @param array $paths An array of paths to purge
 	 *
@@ -37,19 +61,14 @@ class CacheMonster_ExternalVarnishService extends BaseApplicationComponent imple
 		// Set the Accept header
 		$client->setDefaultOption('headers/Accept', '*/*');
 
-		// Get the settings out of our config
-		$settings = craft()->config->get('externalCachingServiceSettings', 'cacheMonster');
-
 		// Loop the paths in this step
 		foreach ($paths as $path)
 		{
 			// Strip the prefixes from the path
-			// TODO: this could be in a base class
-			$path = preg_replace('/site:/', '', $path, 1);
-			$path = preg_replace('/cp:/', '', $path, 1);
+			$path = $this->stripPrefixesFromPath($path);
 
 			// Make the base url
-			$url = $settings['url'].$path;
+			$url = $this->_settings['url'].$path;
 
 			// Create the PURGE request
 			$request = $client->createRequest('PURGE', $url);
@@ -58,6 +77,7 @@ class CacheMonster_ExternalVarnishService extends BaseApplicationComponent imple
 			$batch->add($request);
 
 			// TODO: add a request for each ip specified in the config here
+			//       when supporting multiple ips
 		}
 
 		// Flush the queue and retrieve the flushed items

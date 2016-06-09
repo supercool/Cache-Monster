@@ -50,6 +50,7 @@ class CacheMonsterPlugin extends BasePlugin
 
 		// Import our non-autoloaded classes
 		Craft::import('plugins.cachemonster.services.ICacheMonster_External');
+		Craft::import('plugins.cachemonster.services.BaseCacheMonster_ExternalService');
 
 		// TODO: move all the event listeners somewhere else - cluttering up the place
 

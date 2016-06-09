@@ -14,13 +14,13 @@ class CacheMonster_WarmingService extends BaseApplicationComponent
 {
 
 	/**
-	 * Wamrs the given paths
+	 * Warms the given path
 	 *
-	 * @param array $paths An array of paths to warm
+	 * @param string $path An path to warm
 	 *
 	 * @return bool
 	 */
-	public function warmPaths($paths)
+	public function warmPath($path)
 	{
 
 		// Make the client

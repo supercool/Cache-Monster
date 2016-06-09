@@ -55,7 +55,7 @@ class CacheMonster_WarmCachesTask extends BaseTask
 	 */
 	public function runStep($step)
 	{
-		return craft()->cacheMonster_warming->warmPaths($this->_paths[$step]);
+		return craft()->cacheMonster_warming->warmPath($this->_paths[$step]);
 	}
 
 	// Protected Methods

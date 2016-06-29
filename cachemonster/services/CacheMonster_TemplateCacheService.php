@@ -317,7 +317,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 				$transaction->rollback();
 			}
 
-			throw $e;
+			CacheMonsterPlugin::log('Couldn’t write to the db: '.$e->getMessage(), LogLevel::Error);
 		}
 	}
 

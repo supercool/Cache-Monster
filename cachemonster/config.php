@@ -10,11 +10,16 @@ return array(
 	'includeQueryString' => true, // Set to false to stop including the query string in the stored path
 
 	// External service settings - so far only Varnish and CloudFlare supported
-	'externalCachingService' => false, // Varnish, CloudFlare, or false
+	'externalCachingService' => false, // Varnish, Nginx, CloudFlare, or false
 	'externalCachingServiceSettings' => array(
 
 		// Varnish
 		'varnish' => array(
+			'url' => CRAFT_SITE_URL,
+		),
+
+		// Nginx FastCGI
+		'nginx' => array(
 			'url' => CRAFT_SITE_URL,
 		),
 

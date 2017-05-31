@@ -56,14 +56,14 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 		// Get the actual paths out of the settings
 		$this->_paths = $this->getSettings()->paths;
 
+		// Fix array keys as some of them were being skipped
+		// which was causing php index undefined
+		$this->_paths = array_values($this->_paths);
+
 		// For Varnish we know we can batch - so lets
 		if ($this->_service == 'Varnish') {
 			$this->_paths = array_chunk($this->_paths, 20);
 		}
-
-		// Fix array keys as some of them were being skipped
-		// which was causing php index undefined
-		$this->_paths = array_values($this->_paths);
 
 		return count($this->_paths);
 	}

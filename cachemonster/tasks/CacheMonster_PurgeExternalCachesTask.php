@@ -61,6 +61,10 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 			$this->_paths = array_chunk($this->_paths, 20);
 		}
 
+		// Fix array keys as some of them were being skipped
+		// which was causing php index undefined
+		$this->_paths = array_values($this->_paths);
+
 		return count($this->_paths);
 	}
 

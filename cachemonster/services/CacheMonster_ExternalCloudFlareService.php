@@ -72,11 +72,11 @@ class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalSe
 
 		try
 		{
-			// Issue a DELETE request to the purge endpoint passing
+			// Issue a POST request to the purge endpoint passing
 			// along the list of files to be purged
 			$url = $this->_purgeUrlForZone($this->_settings['zoneId']);
 			$body = json_encode(array('files' => $preparedPaths));
-			$request = $client->delete($url);
+			$request = $client->post($url);
 			$request->setBody($body);
 			$request->send();
 		}

@@ -64,6 +64,10 @@ class CacheMonster_PurgeExternalCachesTask extends BaseTask
 		if ($this->_service == 'Varnish') {
 			$this->_paths = array_chunk($this->_paths, 20);
 		}
+		// For CloudFlare we know we can batch 30 - so lets
+		else if ($this->_service == 'CloudFlare') {
+			$this->_paths = array_chunk($this->_paths, 30);
+		}
 
 		return count($this->_paths);
 	}

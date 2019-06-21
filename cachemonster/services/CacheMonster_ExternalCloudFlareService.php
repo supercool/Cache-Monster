@@ -56,10 +56,12 @@ class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalSe
 		{
 			throw new Exception(Craft::t('Could not validate the CloudFlare cache settings! Please ensure you have entered an "authEmail", "authKey" and "zoneId".'));
 		}
+			
+		// Have had issues with cache clears so
 
 		// Normalize the paths
 		$preparedPaths = $this->_preparePaths($paths);
-
+		
 		// Make the client
 		$client = new \Guzzle\Http\Client();
 
@@ -75,6 +77,8 @@ class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalSe
 			// Issue a POST request to the purge endpoint passing
 			// along the list of files to be purged
 			$url = $this->_purgeUrlForZone($this->_settings['zoneId']);
+			// if need to purge all swap these two lines
+			//$body = json_encode(array('purge_everything' => true));
 			$body = json_encode(array('files' => $preparedPaths));
 			$request = $client->post($url);
 			$request->setBody($body);
@@ -90,6 +94,48 @@ class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalSe
 		return true;
 	}
 
+	/**
+	 * @inheritDoc ICacheMonster_External::fullPurge()
+	 *
+	 * @return bool
+	 */
+	public function fullPurge()
+	{
+		// Bail if the settings weren’t valid
+		if (!$this->_hasValidSettings())
+		{
+			throw new Exception(Craft::t('Could not validate the CloudFlare cache settings! Please ensure you have entered an "authEmail", "authKey" and "zoneId".'));
+		}
+	
+		// Make the client
+		$client = new \Guzzle\Http\Client();
+
+		// Set the relevant headers
+		$client->setDefaultOption('headers', array(
+			'X-Auth-Email' => $this->_settings['authEmail'],
+			'X-Auth-Key'   => $this->_settings['authKey'],
+			'Content-Type' => 'application/json'
+		));
+
+		try
+		{
+			// Issue a POST request to the purge endpoint 
+			$url = $this->_purgeUrlForZone($this->_settings['zoneId']);
+			// if need to purge all swap these two lines
+			$body = json_encode(array('purge_everything' => true));
+			$request = $client->post($url);
+			$request->setBody($body);
+			$request->send();
+		}
+		catch (\Exception $e)
+		{
+			CacheMonsterPlugin::log('An exception occurred: '.$e->getMessage(), LogLevel::Error);
+			return false;
+		}
+		
+		// Just pretend it always worked
+		return true;
+	}
 
 	// Private Methods
 	// =========================================================================
@@ -130,7 +176,7 @@ class CacheMonster_ExternalCloudFlareService extends BaseCacheMonster_ExternalSe
 		{
 			// Strip the prefixes from the path
 			$path = $this->stripPrefixesFromPath($path);
-			$preparedPaths[] = UrlHelper::getSiteUrl($path);
+			$preparedPaths[] = $clearUrl = str_replace('http://', 'https://', UrlHelper::getSiteUrl($path));
 		}
 
 		return $preparedPaths;

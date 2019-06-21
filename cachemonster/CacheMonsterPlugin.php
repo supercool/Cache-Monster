@@ -103,6 +103,13 @@ class CacheMonsterPlugin extends BasePlugin
 			{
 				craft()->cacheMonster_templateCache->deleteCachesByElementId($elementIds);
 			}
+
+		});
+
+		// Clear cache when entry is saved.
+		craft()->on('entries.onSaveEntry', function(Event $event)
+		{
+			$this->fullCacheClear();
 		});
 
 		// Raised right before an element is saved.
@@ -121,6 +128,7 @@ class CacheMonsterPlugin extends BasePlugin
 			if ($criteria->id) {
 				craft()->cacheMonster_templateCache->deleteCachesByElementId($criteria->id);
 			}
+
 		});
 
 		// Raised when an element is moved within a structure.
@@ -130,6 +138,7 @@ class CacheMonsterPlugin extends BasePlugin
 			if ($element) {
 				craft()->cacheMonster_templateCache->deleteCachesByElement($element);
 			}
+
 		});
 
 		// Raised right before a user is deleted.
@@ -208,6 +217,17 @@ class CacheMonsterPlugin extends BasePlugin
 
 		});
 
+	}
+
+	private function fullCacheClear()
+	{
+		$service = craft()->config->get('externalCachingService', 'cacheMonster');
+		if (!$service) {
+			return true;
+		}
+		$service = 'cacheMonster_external'.$service;
+
+		return craft()->$service->fullPurge();
 	}
 
 	public function onBeforeInstall()

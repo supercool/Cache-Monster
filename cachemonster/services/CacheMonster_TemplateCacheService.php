@@ -316,9 +316,9 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			{
 				$transaction->rollback();
 			}
-
 			CacheMonsterPlugin::log('Couldn’t write to the db: '.$e->getMessage(), LogLevel::Error);
 		}
+
 	}
 
 
@@ -473,7 +473,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 		{
 			return false;
 		}
-
+		
 		if ($deleteQueryCaches && craft()->config->get('cacheElementQueries', 'cacheMonster'))
 		{
 			// If there are any pending CacheMonster_DeleteStaleTemplateCachesTask tasks, just append this element to it
@@ -482,7 +482,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 			if ($task && is_array($task->settings))
 			{
 				$settings = $task->settings;
-
+				
 				if (!is_array($settings['elementId']))
 				{
 					$settings['elementId'] = array($settings['elementId']);
@@ -499,13 +499,14 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 				// Make sure there aren't any duplicate element IDs
 				$settings['elementId'] = array_unique($settings['elementId']);
-
+				
 				// Set the new settings and save the task
 				$task->settings = $settings;
 				craft()->tasks->saveTask($task, false);
 			}
 			else
 			{
+				
 				craft()->tasks->createTask('CacheMonster_DeleteStaleTemplateCaches', null, array(
 					'elementId' => $elementId
 				));
@@ -526,7 +527,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 		}
 
 		$cacheIds = $query->queryColumn();
-
+		
 		if ($cacheIds)
 		{
 			return $this->deleteCacheById($cacheIds);
@@ -535,6 +536,29 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 		{
 			return false;
 		}
+	}
+
+	private function clearExternalCache($elementId)
+	{
+		$criteria = craft()->elements->getCriteria(ElementType::Entry);
+    	$criteria->id = $elementId;
+    	
+    	$entry = $criteria->first();
+
+		if ($entry) {
+			$clearUrl = craft()->getSiteUrl().$entry->uri;
+
+			if($clearUrl){
+				// Ensure url scheme is correct
+				$clearUrl = str_replace('http://', 'https://', $clearUrl);
+				$paths = [];
+				$paths[] = $clearUrl;
+				// Ensure external cache gets cleared 
+				craft()->tasks->createTask('CacheMonster_PurgeExternalCaches', null, array(
+					'paths' => $paths
+				));
+			}
+		} 
 	}
 
 	/**
@@ -687,9 +711,9 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		$cacheIds = $query->queryColumn();
 
-		// Allow stuff to happen with those caches before they get deleted
-		$this->onBeforeDeleteTemplateCaches($cacheIds);
-
+		// Remove all external caches
+		$this->_purgeExternalCaches();
+		
 		// Delete them
 		$affectedRows = craft()->db->createCommand()->delete(static::$_templateCachesTable);
 		return (bool) $affectedRows;
@@ -841,6 +865,22 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 
 	/**
+	 * Purges external cache
+	 *
+	 * @return array|bool
+	 */
+	private function _purgeExternalCaches()
+	{
+		// Make sure external caching is enabled.
+		if (!$this->_isExternalCachingEnabled())
+		{
+			return;
+		}
+		
+		craft()->tasks->createTask('CacheMonster_FullPurgeExternalCaches');
+	}
+
+	/**
 	 * Purges a cache for an external service by its ID(s).
 	 *
 	 * @param int|array $cacheId The cache ID.
@@ -849,7 +889,7 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 	 */
 	private function _purgeExternalCachesByCacheId($cacheId)
 	{
-
+		
 		// Make sure external caching is enabled.
 		if (!$this->_isExternalCachingEnabled())
 		{
@@ -864,44 +904,12 @@ class CacheMonster_TemplateCacheService extends BaseApplicationComponent
 
 		// Get the paths
 		$paths = $this->getPathsByIds($cacheId);
-
+			
 		if ($paths) {
-
-			// If there are any pending CacheMonster_PurgeExternalCaches tasks, just append this element to it
-			$task = craft()->tasks->getNextPendingTask('CacheMonster_PurgeExternalCaches');
-
-			if ($task && is_array($task->settings))
-			{
-				$settings = $task->settings;
-
-				if (!is_array($settings['paths']))
-				{
-					$settings['paths'] = array($settings['paths']);
-				}
-
-				if (is_array($paths))
-				{
-					$settings['paths'] = array_merge($settings['paths'], $paths);
-				}
-				else
-				{
-					$settings['paths'][] = $paths;
-				}
-
-				// Make sure there aren't any duplicate paths
-				$settings['paths'] = array_unique($settings['paths']);
-
-				// Set the new settings and save the task
-				$task->settings = $settings;
-				craft()->tasks->saveTask($task, false);
-			}
-			else
-			{
-				craft()->tasks->createTask('CacheMonster_PurgeExternalCaches', null, array(
-					'paths' => !is_array($paths) ? array($paths) : $paths
-				));
-			}
-
+			craft()->tasks->createTask('CacheMonster_PurgeExternalCaches', null, array(
+				'paths' => !is_array($paths) ? array($paths) : $paths
+			));
+			
 			return $paths;
 		} else {
 			return false;

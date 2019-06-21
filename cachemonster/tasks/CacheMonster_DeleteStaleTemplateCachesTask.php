@@ -135,7 +135,7 @@ class CacheMonster_DeleteStaleTemplateCachesTask extends BaseTask
 		}
 
 		$row = array_shift($this->_batchRows);
-
+		
 		// Have we already deleted this cache?
 		if (in_array($row['cacheId'], $this->_deletedCacheIds))
 		{
@@ -155,6 +155,7 @@ class CacheMonster_DeleteStaleTemplateCachesTask extends BaseTask
 			if (array_intersect($criteria->ids(), $this->_elementIds))
 			{
 				// Delete this cache
+				CacheMonsterPlugin::log('Clearing 1 cache for '.print_r($row['cacheId'], true) , LogLevel::Error);
 				craft()->cacheMonster_templateCache->deleteCacheById($row['cacheId']);
 				$this->_deletedCacheIds[] = $row['cacheId'];
 				$this->_totalDeletedCriteriaRows++;

@@ -61,7 +61,7 @@ class CacheMonsterController extends BaseController
 
 		// Delete all the template caches!
 		craft()->cacheMonster_templateCache->deleteAllCaches();
-
+		
 		// Run any pending tasks
 		if (!craft()->tasks->isTaskRunning())
 		{

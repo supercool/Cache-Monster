@@ -97,4 +97,10 @@ class CacheMonster_ExternalVarnishService extends BaseCacheMonster_ExternalServi
 
 	}
 
+	public function fullPurge()
+	{
+		// Not implemented
+		return true;
+	}
+
 }

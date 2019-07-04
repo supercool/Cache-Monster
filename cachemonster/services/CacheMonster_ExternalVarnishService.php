@@ -57,6 +57,12 @@ class CacheMonster_ExternalVarnishService extends BaseCacheMonster_ExternalServi
 
 		// Make the client
 		$client = new \Guzzle\Http\Client();
+		$options = [];
+		if(array_key_exists('header', $this->_settings) && $this->_settings['header'] != null)
+		{
+			$header = $this->_settings['header'];
+			$options['Host'] = $header; 
+		}
 
 		// Set the Accept header
 		$client->setDefaultOption('headers/Accept', '*/*');
@@ -71,7 +77,7 @@ class CacheMonster_ExternalVarnishService extends BaseCacheMonster_ExternalServi
 			$url = $this->_settings['url'].$path;
 
 			// Create the PURGE request
-			$request = $client->createRequest('PURGE', $url);
+			$request = $client->createRequest('PURGE', $url, $options);
 
 			// Add it to the batch
 			$batch->add($request);

@@ -16,6 +16,7 @@ return array(
 		// Varnish
 		'varnish' => array(
 			'url' => CRAFT_SITE_URL,
+			'header' => null // if we need to send a host header to clear varnish behind cloudflare, in which case the url should be the varnish server url
 		),
 
 		// Nginx FastCGI

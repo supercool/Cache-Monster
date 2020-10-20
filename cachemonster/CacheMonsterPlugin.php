@@ -27,7 +27,7 @@ class CacheMonsterPlugin extends BasePlugin
 
 	public function getVersion()
 	{
-		return '2.0.2';
+		return '2.0.3';
 	}
 
 	public function getDeveloper()
@@ -51,6 +51,7 @@ class CacheMonsterPlugin extends BasePlugin
 		// Import our non-autoloaded classes
 		Craft::import('plugins.cachemonster.services.ICacheMonster_External');
 		Craft::import('plugins.cachemonster.services.BaseCacheMonster_ExternalService');
+		Craft::import('plugins.cachemonster.schedulerjobs.Scheduler_ClearCacheAndResaveJob');
 
 		// TODO: move all the event listeners somewhere else - cluttering up the place
 
@@ -276,6 +277,16 @@ class CacheMonsterPlugin extends BasePlugin
 		return array(
 			'cachemonster' => array('action' => 'cacheMonster/index'),
 		);
+	}
+
+	public function Scheduler_registerJobTypes()
+	{
+		return [
+			[
+				'name' => 'Clear cache and resave',
+				'class' => 'Scheduler_ClearCacheAndResaveJob'
+			]
+		];
 	}
 
 	// Protected Methods
